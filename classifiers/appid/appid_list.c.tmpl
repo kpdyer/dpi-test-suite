@@ -1,0 +1,114 @@
+/*
+ * Application ID library
+ *  
+ * Copyright (c) 2005-2007 Arbor Networks, Inc.
+ *
+ * $Arbor: appid_list.c,v 1.1 2007/02/07 15:57:53 pha Exp $
+ */ 
+
+#include <stdio.h>
+
+#include "appid.h"
+
+#define DEBUG_APPID_LIST 1
+
+/*
+ * appid_metadata provides various bits of metadata about an
+ * application.
+ *
+ *   short_name    -> 'internal' name - lower case, no spaces, etc
+ *   full_name     -> external name - mixed case, spaces, < 64 chars
+ *   description   -> one or more line description
+ *   port_list     -> string listing port/protocols, undefined format
+ */
+
+struct appid_metadata {
+	const char *short_name;
+	const char *full_name;
+	const char *description;
+	const char *port_list;
+};
+
+extern struct appid_metadata appid_metadata[];
+
+struct appid_metadata appid_metadata[MAX_APPID] = {
+<? for app in apps: ?>
+    [APPID_<?= app['name'].upper() ?>] = {
+        "<?= app['name'] ?>",
+        "<?= app['full_name'] ?>",
+        "<?= app['description'] ?>",
+        "<?= app['ports'] ?>",
+    },
+<? end ?>
+};
+
+const char *
+appid_app_to_name(int appid)
+{
+#if DEBUG_APPID_LIST
+    static char buf[256];
+#endif
+    switch(appid) {
+<? for app in apps: ?>
+        case APPID_<?= app['name'].upper() ?>: return "<?= app['full_name'] ?>";
+<? end ?>
+        default:
+#if DEBUG_APPID_LIST
+            snprintf(buf, sizeof(buf), "UNKNOWN ID %d", appid);
+            return buf;
+#else
+            return "UNKNOWN";
+#endif
+    }
+    return "UNKNOWN";   /* NOTREACHED */
+}       
+
+int
+appid_uses_port(int app, int protocol, int port)
+{
+    if (protocol == 6) {  /* IPPROTO_TCP */
+        switch (app) {
+<? for name, ports in app_ports.iteritems(): ?>
+<?     if ports['tcp']: ?>
+            case APPID_<?= name.upper() ?>: {
+                if (<?= ' || '.join([ 'port == %s' % port for port in ports['tcp'] ]) ?>) return 1;
+            }
+<?     end ?>
+<? end ?>
+        }
+    } else if (protocol == 17) { /* IPPROTO_UDP */
+        switch (app) {
+<? for name, ports in app_ports.iteritems(): ?>
+<?     if ports['udp']: ?>
+            case APPID_<?= name.upper() ?>: {
+                if (<?= ' || '.join([ 'port == %s' % port for port in ports['udp'] ]) ?>) return 1;
+            }
+<?     end ?>
+<? end ?>
+        }
+    }
+    return 0;
+}
+
+int
+appid_port_to_app(int protocol, int port)
+{
+    if (protocol == 6) { /* IPPROTO_TCP */
+        switch (port) {
+<? for name, ports in app_ports.iteritems(): ?>
+<?     for port in ports['tcp']: ?>
+            case <?= port ?>: return APPID_<?= name.upper() ?>;
+<?     end ?>
+<? end ?>
+        }
+    } else if (protocol == 17) { /* IPPROTO_UDP */
+        switch (port) {
+<? for name, ports in app_ports.iteritems(): ?>
+<?     for port in ports['udp']: ?>
+            case <?= port ?>: return APPID_<?= name.upper() ?>;
+<?     end ?>
+<? end ?>
+        }
+    }
+    return APPID_UNKNOWN;
+}

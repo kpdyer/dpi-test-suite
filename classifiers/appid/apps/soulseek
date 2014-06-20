@@ -1,0 +1,28 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Soulseek
+AppID: 100
+Port: tcp/2240
+Machine: any
+
+##########
+# Soulseek
+
+# Soulseek P2P Protocol
+# http://www.slsknet.org/
+
+slsk_response = 
+    any any 0x00 0x00			# message length (assume < 2^16)
+    0x01 0x00 0x00 0x00			# login reply message type
+    0x01				# login success flag
+    any any 0x00 0x00			# string length (assume < 2^16)
+    ;
+
+slsk_login =
+    any 0x00 0x00 0x00			# message length (assume < 256)
+    0x01 0x00 0x00 0x00			# login message type
+    any 0x00				# username length (assume < 256)
+    ;
+
+soulseek = ( slsk_login | slsk_response ) @<MATCH> any*;

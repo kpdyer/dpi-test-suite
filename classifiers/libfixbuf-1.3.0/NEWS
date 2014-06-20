@@ -1,0 +1,232 @@
+Version 1.3.0: 2013-03-08
+============================
+
+Maintain count of missed NetFlow v9 export packets per session
+
+Added API function fbCollectorGetNetflowMissed to retrieve missed packet count 
+
+IPFIX elements updated
+
+Spread Disconnect Bug fix
+
+Version 1.2.0: 2012-09-14
+============================
+
+UDP Collection Enhancements.
+
+Manage UDP sessions by peer address and observation domain.
+
+Version 1.1.2: 2012-06-07
+============================
+
+Bug Fixes.
+
+NetFlow v9 Bug Fixes.
+
+Version 1.1.1: 2011-12-22
+============================
+
+Bug Fixes.
+
+Version 1.1.0: 2011-10-31
+============================
+
+New IPFIX Elements
+
+NetFlow v9 Enhancements and bug fixes
+
+Version 1.0.2: 2011-09-12
+============================
+
+Bug Fixes
+
+Version 1.0.1: 2011-06-01
+============================
+
+Fix to maintain compatibility with GLib prior to version 2.10
+
+Version 1.0.0: 2011-04-28
+=============================
+
+Added functionality to adhere to the proposed IPFIX extension: "Export of Structured Data in IPFIX".  This proposed standard allows for the following three new data types.
+
+Added new data type: fbBasicList_t to house fixbuf "basicLists."
+
+Added new data type: fbSubTemplateList_t to house fixbuf "subTemplateLists."
+
+Added new data type: fbSubTemplateMultiList_t to house fixbuf "subTemplateMultiLists."
+
+Added the functionality to handle multiple listeners, allowing for connections on multiple ports.
+
+Support for Netflow V9.
+
+Spread support has been expanded to allow for greater flexibility in using one exporter to publish to multiple groups.
+
+Templates are now managed on a per-group basis for a Spread exporter.
+
+Templates can now be multicasted to select Spread groups.
+
+Default Automatic Mode for Listeners is now set to true.
+
+Many other bug fixes.
+
+Version 0.9.0: 2010-07-27
+==============================
+
+Added support for Spread Toolkit to allow publish subscribe distribution of YAF sensor output. 
+
+Version 0.8.0: 2008-09-09
+=================================
+
+Addition of NetFlow v9 input translation on network connections.  NetFlow v9
+only works as a collector (listener) and only over UDP.  (Most of those
+limitations are related to the nature of the NetFlow protocol itself.)  
+
+
+Version 0.7.2: 2008-01-18
+=================================
+
+Minor build system change required to fix multithreaded fixbuf collection 
+issues with skipfix in SiLK 0.11.9 and later.
+
+Version 0.7.1: 2007-09-28
+===================================
+
+Fixes encoding errors of octet array information elements on little-endian 
+machines.
+
+Version 0.7.0: 2007-08-17
+================================
+
+Fixes alignment issues on Solaris/SPARC; cross-platform build enhancements;
+support for - as stdin/stdout filename; partial flexible stream selection 
+support; true biflow reverse PEN support. 
+
+Version 0.6.0: 2007-05-17
+=============================
+
+libfixbuf 0.6.0 completely reorganizes the API to recenter it around an
+IPFIX Message Buffer object. It adds new, more flexible interfaces to lower
+level transport for building IPFIX Collecting and Exporting Processes,
+including a select()-based listener interface for multi-session
+collectors; support for SCTP and TLS over TCP as transport protocols;
+and support for reverse PEN based bidirectional flow export as in 
+draft-ietf-ipfix-biflow-03. Storage of IPFIX Messages in files is supported,
+but the final message and final set support as in revision -00 of 
+draft-trammell-ipfix-file has been removed.
+
+This release also renames all the calls and data structures to be in line
+with the conventions used in the NetSA SiLK codebase, and is therefore
+completely incompatible with previous releases; applications
+must be rewritten to use fixbuf 0.6.0.
+
+Version 0.5.0: 2006-09-29
+===================================
+
+libfixbuf 0.5.0 splits the API into application programming interface and 
+transport programming interface, and adds new transport layers for TCP, UDP, 
+and files.
+
+Version 0.4.1: 2006-07-07
+=============================
+
+libfixbuf 0.4.1 adds a new Information Element for YAF 0.1.6.
+
+Version 0.4.0: 2006-06-16
+===============================
+
+libfixbuf 0.4.0 is a bugfix and feature enhancement release. 
+The FixSession structure has been removed, to store templates per 
+FixReader or FixWriter instance. This was done to support per-session 
+(transient) scoping of template IDs. This is an incompatible API change; 
+fixbuf applications will have to be updated to use the new 0.4.0 API.
+
+Version 0.3.2: 2006-03-17
+===============================
+
+libfixbuf 0.3.2 is a bugfix release. Transcode plan caching now works properly.
+
+Version 0.3.1: 2006-03-14
+===============================
+
+libfixbuf 0.3.1 is a bugfix and feature enhancement release. Support now exists
+for full template table export, to comply with periodic template export
+requirements in the IPFIX protocol. Reduced-length information element encoding
+is now supported, as well, with full transcoder support for transcoding between
+identical information elements of different arbitrary lengths.
+
+Version 0.3.0: 2006-02-03
+=================================
+
+libfixbuf 0.3.0 adds an information element registry, changing the way that
+information elements are programmatically added to templates. New information
+elements have been added to support YAF. Also new is FixVarfield, a much more
+usable interface for transcoding variable-length information elements.
+Variable-length transcoding support has been completely rewritten and tested.
+fixport and fixcollect have been removed; the upcoming YAF IPFIX export and
+collection facility will take their place. Corner-case bugs in the writer and 
+transcoder have been fixed as well.
+
+Version 0.2.0: 2006-01-06
+================================
+
+libfixbuf 0.2.0 is a redesign of the libfixbuf API, renaming most calls. 
+It adds MTU support for splitting record streams into multiple messages, 
+built-in UDP export and collection support. Two new applications, fixport and
+fixcollect, are now provided for UDP export and collection. Additionally, this 
+version modifies the API for handling private enterprise information
+elements, and adds new CERT private enterprise information elements for
+biflow support in NAF 0.4.2.
+
+Version 0.1.1: 2005-11-18
+=================================
+
+libfixbuf 0.1.1 is a bugfix release, fixing a read buffer reset bug that 
+kept libfixbuf from reading multiple messages with the same reader.
+
+Version 0.1.0: 2005-10-31
+=================================
+
+libfixbuf 0.1.0 splits its session template table into "read" and "write"
+sides, to avoid template number space collisions when writing IPFIX filters
+using libfixbuf. It also splits calls to its low-level I/O functions to
+support future UDP and SCTP low-level I/O for IPFIX compliance. Alpha quality
+warnings still apply, though the API should be settling down soon.
+
+Version 0.0.7: 2005-10-03
+================================
+
+libfixbuf 0.0.7 extends the FloCON preview release with Options Template
+Set support, (still untested but otherwise complete) variable-length
+information element support, and a few new information elements to support 
+NAF 0.0.7. The library is still undocumented, and should still be considered
+alpha-quality.
+
+Version 0.0.3: 2005-09-16
+===================================
+
+libfixbuf 0.0.3 is the FloCON Developers' Preview Release of
+libfixbuf. This revision of libfixbuf is a partial implementation of
+the IPFIX protocol message format (as of September 2005) with support
+for long messages and sets as outlined in IETF individual draft
+draft-trammell-ipfix-file-00. Important features are missing, including:
+
+* Options Template Set support
+
+* Variable-length information element support (partial, untested)
+
+In addition, the API for this version is not documented, because it
+will change. Specificially:
+
+* Sessions support for information element registries, including type
+  information for each information element number. This will allow
+  libfixbuf to handle endian conversion, among other things.
+
+* Transcoder support for information element value
+  translation within the context of a message; e.g. relative to
+  absolute flow times, flow times to time and duration, etc.
+
+* Any other commentary received on API usability during or after
+  FloCON will be considered, and identified issues addressed.
+
+See the README file for more on using libfixbuf.

@@ -1,0 +1,5 @@
+Broccoli API documentation is currently generated with the help of
+Doxygen.  The Doxygen input file is configured by CMake from
+``Doxyfile.in`` after running ``./configure`` from the source root, and
+then (if Doxygen is installed), running ``make doc`` will generate the
+API docs, using ``build/doc/html`` as the output directory.

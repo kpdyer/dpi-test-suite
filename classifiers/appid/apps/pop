@@ -1,0 +1,29 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: POP
+AppID: 75
+Port: tcp/110
+
+# RFC 1939
+
+# POP server:
+#   +OK ...
+#   -ERR ...
+pop3_server = 
+    ("+OK "i | "-ERR "i)	# +OK or -ERR
+    [^\r\n]+ [\r\n]+		# Rest of line
+    ;
+
+# POP client:
+#   USER <username>
+#   PASS <password> or QUIT
+#
+#   APOP <username> <md5-digest>
+pop3_client =
+    ("USER "i [^ ]+ [\r\n]+
+     (("PASS "i [^ \r\n]+ [\r\n]+) | ("QUIT"i [\r\n]+))) |
+    ("APOP "i [^ \r\n]+ " " xdigit{16} [\r\n]+)
+    ;
+
+pop = (pop3_server | pop3_client) @<MATCH> any*;

@@ -1,0 +1,21 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: RADIUS
+AppID: 81
+Port: udp/1812
+# XXX - Port used to be 1645; see the RFC
+
+# http://www.ietf.org/rfc/rfc2138.txt
+
+#
+# XXX -- Too freeform to enable at the moment.  Probably want to be able to
+# validate the length field, and possibly match the port too.
+#
+#radius = 
+#    (1..5 | 11..13 | 255)	# Code (XXX - 255 is "Reserved" -- needed??)
+#    any				# Identifier
+#    any{2}			# Length (20 <= length <= 4096)
+#    any{16}			# Authenticator
+#    @<MATCH> any*
+#    ;

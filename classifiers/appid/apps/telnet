@@ -1,0 +1,16 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Telnet
+AppID: 110
+Port: tcp/23
+
+# ftp://ftp.rfc-editor.org/in-notes/rfc854.txt
+# l7-filters/telnet
+
+# Telnet client/servers will usually begin the session with a series
+# of WILL/WON'T/DO/DON'T commands defining their capabilities.  Match
+# three of these.
+telnet = 
+    (255 (251..254) any){3}     # IAC WILL/WON'T/DO/DON'T
+    @<MATCH> any*;

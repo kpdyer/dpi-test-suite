@@ -1,0 +1,315 @@
+
+Build issues
+------------
+
+The appid_apps signature package is distributed separately, although
+the generated code from the last stable signature package release is
+distributed with this package (as appid.c).
+
+To add or modify signatures, unpack the appid_apps package here (into
+the "apps" directory), and make sure the configure script finds both
+Python and Ragel binaries (--with-python and --with-ragel arguments
+respectively) before running make.
+
+To modify the Python module code in appid.pyx, you will need to have
+the Pyrex package installed. Running make should automatically
+regenerate pyappid.c from any modifications to appid.pyx, after which
+you should proceed with the usual Python build.
+
+After modifying Makefile.am or configure.in, you will want to run the
+top-level bootstrap to regenerate the Makefile.in and configure files.
+
+
+Protocol prioritizing
+---------------------
+
+Each protocol assigns an inital confidence level, with a
+default of APPID_CONFIDENCE_NORMAL.  By default, any protocol
+that has ports associated with it will increment or decrement
+the confidence level by one according to whether or not
+the payload is on a matching port for the protocol.
+
+If that modified confidence level is greater than the currently
+assigned confidence level, the existing application assignment
+and confidence levels are overridden.
+
+The above rules allow all state machines to run as far as the
+payload allows them.
+
+As an optimization, if the confidence level is greater than
+APPID_CONFIDENCE_NORMAL, we claim we are done and fast exit
+back to the caller.
+
+Protocol fallback case
+----------------------
+
+In the case when not all machines have rejected the payload,
+but no application has been matched, appid_process will assign
+a low confidence match based on the payloads port.
+
+If the payload is rejected by all machines, we leave the
+application as APP_UNKNOWN.
+
+Protocol Overlays (stacking?)
+-----------------
+
+[This section needs additional work for nomenclature and
+correctness.]
+
+There are some cases where OSI layer 7 applications can be overlaid
+on top of other applications.
+
+For example, ICY (SHOUTcast) sessions are similar to HTTP,
+in that they C->S request is formatted the same and use TCP
+on the same port.  The S->C reply, however, in this case is
+clearly an ICY response (the payload starts with "ICY...").
+
+appid supports this transition in two scenarios by using
+tweaked application protocol confidence levels.
+
+The first scenario is where pktengine (the appid caller) sees
+the reply traffic, and now must call appid again, followed
+by doing a check on the confidence level of the appid for both
+streams to take the better of the two.
+
+The second scenario is where a higher level traffic aggregator
+device must attempt to match up C->S and S->C flows across
+multiple TMS (or other) boxes.  Given an aflow type tuple,
+the flows can be matched up, and the resulting application
+ID comes from the flow with the higher confidence level.
+
+This means that in the case of ICY over HTTP, we must ensure
+that ICY has a higher confidence level than HTTP, whatever
+those particular assignments may be.
+
+As of this writing, we intend to make HTTP APPID_CONFIDENCE_LOW,
+and hope that will be good enough.  If not, we may need
+to adjust the confidence levels and some of the appid logic
+that uses it.
+
+Ragel
+-----
+
+Ragel converts regular expressions (or deterministic finite state
+machines) to C.  It allows C code to be executed on all state
+machine transitions, which allows for some non-determinism to exist
+without introducing state machine explosion.
+
+Ragel supports multiple C implementions of a machine: multiple tables,
+single tables, and switch statements.  There is a speed/space (code or
+data) trade-off between the different machines.
+
+
+How to write a new fingerprint
+------------------------------
+
+Identify traffic that needs a fingerprint.  
+
+Get traffic trace.  Use your personal traffic or traffic from the
+Arbor network.  Remove any passwords any confidential information.
+
+Research the protocol.  Look at the trace in Ethereal.  Find RFCs and
+other documentation online.  Look at the L7-filters filter for it if
+it has one.
+
+Write an app file.  Start with "template.  Also look for a protocol
+you believe to be similar and see how it is implemented.
+ 
+Add the traffic trace to tests/pcap.  Run tests/appid on the trace to
+test the fingerprint.
+
+Run the regression tests in tests ('bmake test').
+
+Consider the following guidelines for state machines:
+
+Protocol machine must be put in the correct machine collection.
+Protocol machine must have example pcap that matches it and no other.
+Protocol machine must have a unique name and application ID.
+Application ID may be arbitrarily chosen.
+Application ID should avoid appearance of a IANA port assignment.
+Protocol machine should use default confidence values where possible.
+Protocol machine should use symbolic names for confidence and
+    related parameters where possible.
+New machines must not use the 'AppID keyword' as it is obsolete.
+Protocol machine must assign a match at latest possible point.
+Protocol machine should use <MATCH> and <C_MATCH> as matching actions.
+Protocol machine should avoid low value matches that expand the overall
+    size of the appid.c machine.  Current size is around 40K lines.
+
+Protocol file tags
+------------------
+
+	Name: <Protocol name>
+
+		Define the pretty printing version of the protocol
+		name.  Need to refactor this away - currently used
+		by app2rl.py for indexing.
+
+	AppID: <id>
+
+	       Required for all new machines, allocated by Arbor.
+	       Once assigned, the number is invariant.
+
+	Port: <proto>/<port> [... <proto>/<port>]
+
+		<proto> is an IP protocol, 'udp' or 'tcp'
+		<port> is an IP port, and may be * for "any port"
+
+	Machine: <machine name>
+
+		<machine name> is from the following list:
+		"dns, default, any, any4, any8, any16"
+
+		If not specified, the machine is placed in 'default'
+
+	Confidence: <macro name from appid.h>
+
+		default value is APPID_CONFIDENCE_NORMAL
+
+	Confidence-Modifer: <C expression>
+
+		<C expression> is a modifer that gets added to
+		the payloads confidence parameter.
+
+		The default is to see if either end of the connection
+		matches the protocol port names (if defined), and if so,
+		add one to the confidence of match, otherwise, subtract
+		one from quality of match.
+
+		An example string is:
+			((a->payload_offset + payload_length==68) ? 1 : -1)
+
+Debugging
+---------
+
+With DEBUG_APPID set to 1, and with -d passed to tests/appid, you get
+a dump of the payload with state machine information about what happened
+after looking at each payload.  At program completion, you also see a
+list of protocol collisions, useful to get an idea of protocol overlap.
+
+Not implemented, but to be added, is a histogram of the match lengths for
+all payloads.  Length 0 will be the unmatched case, all others will go to
+their respective bucket.  This will give us insight into how rapidly protocols
+are reaching a match state.
+
+Hints
+-----
+
+Avoid any*, except at the end of a signature.  Currently, all
+protocol engines use any* at the end of a signature with the
+exception of the NULL DNS query signature, which terminates
+when it has seen 12 bytes (any any 00 00 00 00 00 00 00 00).
+
+Fingerprints that start with "any" should include the tag "Machine:
+any" in the fingerprint file.  Similarly, if a machine starts with
+any{4}, specify "Machine: any4".  Do this for any, any4, any8, and any16.
+
+Write "any* :>> 'FIN' <MATCH> any*" instead of "any* 'FIN' <MATCH>
+any*".  The former uses priorities so that the machine will leave the
+any* catch-all machine as soon as it matches 'FIN' and execute <MATCH>
+once (4 states).  The later will stay in the any* catch-all machine
+and execute <MATCH> for every 'FIN' (6 states).  See the Ragel
+documentation on the "finish-guarded concatenation".
+
+Use the rlcodegen -V option to create a Graphviz file with the FSM
+diagram.  This is only useful for small FSMs.
+
+Use the tests/appid -d (debug) option with provided pcap files to
+see how appid_process handles multiple state machines and assigning
+appid and quality of match to the payload.
+
+To see how well protocol engines work with maximally fragmented
+payloads, use tests/appid -1 (one byte at a time).
+
+Ragel Summary
+-------------
+(see chapter 3 for full detail)
+
+States:
+    Classes of State            Kinds of embeddings
+    ----------------            -------------------
+    '>' -> start state           ~ -> to state
+    '$' -> all state             * -> from state
+    '%' -> final state           / -> EOF state
+    '<' -> any ex start state    ! -> from state
+    '@' -> all state             ^ -> from state
+   '<>' -> any ex start/final  
+    
+'To state' actions: >~ $~ %~ <~ @~ <>~
+'From state' actions: >* $* %* <* @* <>*
+'EOF ' actions: >/ $/ %/ </ @/ <>/
+'Global error' actions: >! $! %! <! @! <>!
+'Local error' actions: >^ $^ %^ <^ @^ <>^
+Code blocks:
+    values: fpc, fc, fcurs, ftargs, fentry
+    statements: fhold, fexec, fgoto, fnext, fcall, fret, fbreak
+
+
+Potential Future Work
+---------------------
+
+Use packet length as a hint.  E.g., if a packet is 48 or 68 bytes and
+matches NTP (among other protocols), then it's NTP.
+
+Use port number as a hint.  E.g., if a packet matches both the DNS and
+NTP fingerprints and the port is 53 (dns), then assume it's DNS.
+
+Include better debug diagnostics to support protocol development.
+
+Papers
+------
+
+"Ragel Guide", Thurston (Ragel author)
+<http://www.cs.queensu.ca/~thurston/ragel/ragel-guide-5.16.pdf>
+
+"Fast and Memory-Efficient Regular Expression Matching for Deep
+Packet Inspection", Yu, Chen, Diao, Lakshman, Katz
+<http://www.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-76.html>
+  (This has a good explaination of DFA state explosion. -DH)
+
+"Dynamic Application-Layer Protocol Analysis for Network Intrusion
+  Detection", Dreger, et al, USENIX 2006
+<http://www.icir.org/robin/papers/usenix06.pdf>
+  (Mostly a high-level architecture paper.  -DH)
+
+Basic background:
+
+Introduction to Automata Theory, Langauges, and Computation", Hopcroft,
+Motwani, Ullman.
+
+Wikipedia has good definitions for most state machine related terminology.
+
+Machines
+--------
+
+There are three types of machines.  The DNS machine identifies DNS and
+DNS only.  It's in a separate machine because it keeps a state machine
+call stack that the other machines do not need.  The Any
+machines (any, any4, any8, any16) start with 'any'.  They're in
+separate machines to minimize state explosion caused by interacting
+with other machines.  The default machine contains all other
+fingerprints - fingerprints that don't start with the machine 'any'.
+
+60000+ appids
+-------------
+
+60001 - mapi
+60002 - icy
+60003 - netflow
+60004 - soap
+60005 - xml
+
+TODO
+----
+
+Decide what confidence levels to use for resolving protocol
+overloading, such as ICY over HTTP, IPP over HTTP, or many others.
+
+Nuances:
+    APPID_CONFIDENCE_LOW is currently by default assigned
+    when we fall back to port->application guessing
+
+    if we reduce HTTP to APPID_CONFIDENCE_LOW, it won't override
+    port based matches, even though a protcol machine provided
+    a match, which we consider to be better than port->app
+

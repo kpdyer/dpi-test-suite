@@ -1,0 +1,23 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: IPP
+AppID: 41
+Port: tcp/631
+
+# IPP 1.0: RFC 2565, Section 4
+# IPP 1.1: RFC 2910, Section 4
+
+ipp = 
+   "POST " [^ ]+ " HTTP/1.1\r\n"     # All IPP is POST
+   (((any - [\r])+ "\r\n")*) :>>     # Header lines
+   ("Content-Type:"i [ \t]* 	     # Content-Type: application/ipp
+    "application/ipp\r\n"i)
+   @<MATCH> any*
+   ;
+
+# Note: The message header field name and field value are separated by
+# white space which may include a CRLF.  However, allowing CRLF
+# results in a larger machine.  In the worst case, someone will send
+# "Content-Type:\r\n application/ipp\r\n" and IPP will probably be
+# misidentified as HTTP.

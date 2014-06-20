@@ -1,0 +1,90 @@
+
+0.18 | 2012-08-01 13:57:19 -0500
+
+  * Fix configure script to exit with non-zero status on error (Jon Siwek)
+
+0.17 | 2012-07-05 12:53:52 -0700
+
+  * Raise minimum required CMake version to 2.6.3 (Jon Siwek)
+
+0.16 | 2012-01-09 16:11:02 -0800
+
+  * Submodule README conformity changes. (Jon Siwek)
+
+  * Fix parallel make portability. (Jon Siwek)
+
+0.15 | 2011-10-25 17:41:31 -0700
+
+  * Make dist now cleans the copied source (Jon Siwek)
+
+0.14-26 | 2011-10-14 15:09:34 -0700
+
+  * Distribution cleanup. (Robin Sommer)
+
+0.14-25 | 2011-10-14 15:06:20 -0700
+
+  * Distribution cleanup. (Jon Siwek and Robin Sommer)
+
+  * config.h wasn't being configured by CMake correctly (Jon Siwek)
+
+  * Adding 'C' language to CMake project as some configure checks depend on it. (Jon Siwek)
+
+0.14-14 | 2011-09-04 08:55:48 -0700
+
+  * FindPCAP now links against thread library when necessary (e.g.
+    PF_RING's libpcap). (Jon Siwek)
+
+  * Install binaries with an RPATH. (Jon Siwek)
+
+  * Workaround for FreeBSD CMake port missing debug flags. (Jon Siwek)
+
+0.14-5 | 2011-07-24 08:28:06 -0700
+
+  * Fixing memory initialization error. (David Binderman)
+
+0.14-3 | 2011-03-14 17:41:03 -0700
+
+  * CMake tuning. (Jon Siwek)
+
+0.14-2 | 2011-02-01 12:38:34 -0800
+
+  * Linking directly to the found pcap library. (Jon Siwek)
+
+0.14 | 2011-01-28 11:09:04 -0800
+
+  * Fix for compiling on OpenBSD and NetBSD. (Kevin Lo)
+
+  * Converting README from AsciiDoc to REST. (Robin Sommer)
+
+  * Ported to CMake. (Jon Siwek)
+
+  * New CHANGES format.
+
+0.13
+  * Do not output anything to syslog if not explicitly enabled.
+
+  * New option -q <n> suppresses all normal output but exits with
+    status code 0 if at least n packets have been received, and 1
+    otherwise.
+
+0.12
+
+  * New option --select/-N which for live pcap input uses select() to
+    check for new packets. This is primarily for testing purposes and
+    shouldn't produce any different results. The code mimics pretty
+    closely how the Bro NIDS uses select() on pcap file handles.
+
+  * Fix disabling option -d when compiled without DAG support. (Justin
+    Azoff)
+
+  * autotools compatibility fixes.
+
+  * Man page contributed by Justin Azoff.
+
+0.11
+
+  * Fixed potential segfault.
+
+0.1
+
+  * Initial release

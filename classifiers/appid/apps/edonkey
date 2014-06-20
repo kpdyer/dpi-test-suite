@@ -1,0 +1,72 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Edonkey
+AppID: 26
+Port: udp/* tcp/*
+# Conflicts with NTP
+
+#
+# eDonkey is a P2P file sharing protocol/network.  Popular clients include:
+#
+#	eDonkey2000	http://www.edonkey2000.com/
+#	eMule		http://www.emule-project.net/
+#	Shareaza	http://shareaza.sourceforge.net/
+#
+# Protocol docs:
+# http://sourceforge.net/projects/pdonkey/
+#
+
+#
+# XXX - Packet data length is a DWORD (4 bytes), but since we're IP, a valid
+# data length must be <= 65535.  So match only on the first two bytes, and
+# assume the second two bytes are 0.  Additionally, it's not valid for both
+# of the first two bytes to be 0.
+#
+edonkey_tcp =
+    (0xe3 | 0xc5 | 0xd4)			# Protocol
+    (((any - 0) 0) | (any (any - 0))) 0 0	# Packet data length
+    0x01					# Hello server
+    ;
+
+#
+# XXX - The UDP messages are too freeform to match on, so they are commented
+# out for now.  The ipp2p project (http://www.ipp2p.org) got around this by
+# matching valid op codes with packet lengths.  i.e., edonkey op code 0x96 is
+# a "client -> server status request", and these UDP messages always have
+# 14 bytes of payload.  We'll probably need this functionality in Ragel soon.
+#
+
+#
+# XXX - Edonkey sends some smaller messages via UDP instead (I saw some packets
+# with only 6 bytes of data).
+#
+#edonkey_udp
+#    (0xe3 |					# Edonkey
+#     0xc5 |					# Emule extensions
+#     0xd4)					# Emule compressed (zlib)
+#    0x96..0xa4					# Valid op codes
+#    ;
+
+#
+# XXX - Overnet is a separate edonkey network that implements the Kademlia
+# protocol (http://www.cs.rice.edu/Conferences/IPTPS02/109.pdf).  The
+# implementation details of Overnet are not yet published, so the following
+# is based on the mldonkey (http://www.nongnu.org/mldonkey) source code.
+#
+#overnet_udp
+#    (0xe4 |					# Kademlia header code
+#     0xe5)					# Kademlia packed header code
+#    (0x00 | 0x08 | 0x10 | 0x18 | 0x20 |	# XXX - Valid op codes
+#     0x28 | 0x30 | 0x38 | 0x40 | 0x48 |
+#     0x3a | 0x42 | 0x4a | 0x50 | 0x51 |
+#     0x52 | 0x58 | 0x59 | 0x5a)
+#    ;
+
+#
+# XXX - Emule implements its own version of Kademlia called the "Kad" network.
+# From packet traces, it seems to use the same op codes as Overnet.
+#
+#kad_udp = overnet_udp;
+
+edonkey = edonkey_tcp @<MATCH> any*;

@@ -1,0 +1,27 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Template
+Port: 123/tcp
+Machine: any
+
+# Template Client
+# RFC X, section Y
+template_client =
+    "TEMPLATE_CLIENT "	# TEMPLATE_CLIENT
+    [^ \r\n]+		# Client name
+    [\r\n]+		# Newline
+    ;
+
+# Template Server
+# RFC X, section Y
+app_server =
+    any any		# Sequence number
+    0xde 0xad 0xbe 0xef	# Version: 0xdeadbeef
+    0x0a 0x00		# Command: Start (0x000a)
+    ;
+
+template = 
+    (template_client | template_server) 
+    @<MATCH> any* 
+    ;

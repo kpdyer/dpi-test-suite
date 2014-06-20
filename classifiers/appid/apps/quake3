@@ -1,0 +1,20 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Quake3
+AppID: 80
+Port: udp/27960 udp/27910
+#     quake3    quake2
+#     wolf et
+
+# See epan/dissectors/packet-quake3.c in ethereal source code.
+#
+# Many games are based on the Quake 3 engine and will match this
+# signature:  http://en.wikipedia.org/wiki/Quake_III_engine
+
+quake3_commands =
+    ( "getinfo"i | "getchallenge"i | "getchallengeresponse"i | "getstatus"i |
+      "getmotd"i | "getmotdresponse"i | "getservers"i | "getipauthorize"i |
+      "getkeyauthorize"i | "info"i | "rcon"i | "connect"i | "connectresponse"i );
+
+quake3 = 0xff{4} quake3_commands @<MATCH> any*;

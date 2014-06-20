@@ -1,0 +1,51 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: H323
+AppID: 34
+Port: tcp/1720
+
+##########
+# H.323 v3
+
+# TPKT header
+#
+# http://www.packetizer.com/rfc/rfc.cgi?num
+# http://www.packetizer.com/in/q6.html
+
+tpkt_header =
+    0x03		# TPKT version 3
+    0x00		# Reserved field
+    any any		# TPKT packet length
+    ;
+
+# H.225
+# 
+# H.225 is the call signaling sub-protocol used by H.323 to set up 
+# new sessions.  H.225's messages are defined by Q.931.
+#
+# http://www.protocols.com/pbook/h323.htm#H225
+# http://www.cs.columbia.edu/sip/drafts/h323vsSPI.html 
+
+h323_call_setup = 
+    0x08				# Protocol discriminator (Q.931)
+    (0x00) |				# Call reference value
+    (0x01 any{1}) |			# Varies between 0-15 bytes
+    (0x02 any{2}) |			# XXX refactor using Semantic Conditions
+    (0x03 any{3}) |
+    (0x04 any{4}) |
+    (0x05 any{5}) |
+    (0x06 any{6}) |
+    (0x07 any{7}) |
+    (0x08 any{8}) |
+    (0x09 any{9}) |
+    (0x0a any{10}) |
+    (0x0b any{11}) |
+    (0x0c any{12}) |
+    (0x0d any{13}) |
+    (0x0e any{14}) |
+    (0x0f any{15}) 
+    (0x05 | 0x02)			# Message type (Setup, Call Proceding)
+    ;
+
+h323 = tpkt_header h323_call_setup @<MATCH> any*;

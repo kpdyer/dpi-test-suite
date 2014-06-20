@@ -1,0 +1,28 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: STUN
+AppID: 104
+Port: udp/3478
+
+##########
+# STUN
+
+# Simple Traversal of UDP over NATS
+#
+# http://tools.ietf.org/html/3489
+
+stun_attr = 
+    0x00 0x03				# change-request attr type
+    0x00 0x04				# attr length
+    0x00 0x00 0x00 (0x04 | 0x02 | 0x00)	# change-ip/change-port
+    ;
+
+stun_request = 
+    0x00 0x01				# binding request
+    0x00 0x08				# request length
+    any{16}				# 128-bit transaction id
+    stun_attr
+    ;
+
+stun = stun_request @<MATCH> any*;

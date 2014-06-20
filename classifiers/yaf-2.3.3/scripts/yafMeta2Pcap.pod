@@ -1,0 +1,138 @@
+=pod
+
+=head1 NAME
+
+B<yafMeta2Pcap> - YAF Pcap Meta File Parser and Pcap Creator
+
+=head1 SYNOPSIS
+
+    yafMeta2Pcap [--pcap-meta-file FILE_PATH]
+                 [--pcap PCAP_FILE_NAME]
+                 [--out OUTPUT_SPECIFIER]
+                 [--hash FLOW_KEY_HASH]
+                 [--time FLOW_START_MILLISECONDS]
+                 [--full-path]
+
+=head1 DESCRIPTION
+
+B<yaf> has several pcap export options available. B<yaf> will create a
+CSV file that contains information to assemble a pcap file for any
+particular flow. B<yafMeta2Pcap> parses the CSV file created by B<yaf>
+and creates a pcap file for the given flow.
+
+=head1 OPTIONS
+
+The following options are required for B<yafMeta2Pcap> to create the
+pcap file.
+
+=over 4
+
+=item B<--pcap-meta-file> I<FILE_PATH>
+
+The path to the pcap-meta-file as created by B<yaf>.  This option may be 
+listed multiple times if multiple pcap-meta-files were created.  They should
+be listed in the order they were created.  The argument is not a list, each
+file should be given to a separate B<--pcap-meta-file>.
+
+=item B<--pcap> I<PCAP_FILE_NAME>
+
+The path to the pcap file that was given to B<yaf> to create the
+pcap-meta-file.  Only use if full path is not available in pcap
+metafile.  This option can be listed multiple times if a flow can be found 
+over multiple pcaps.  They should be listed in the order they were created.
+B<yafMeta2Pcap> will open subsequent pcaps when the third column in the pcap-
+meta-file changes.  For example, if the third column is 0, B<yafMeta2Pcap>
+will open the first pcap given to B<--pcap>. The argument is not a list, each
+file should be given to a separate B<--pcap>.
+
+=item B<--out> I<OUTPUT_SPECIFIER>
+
+The full path of the pcap file that will be created containing just
+the packets from the given flow.
+
+=item B<--hash> I<FLOW_KEY_HASH>
+
+The flow key hash of the flow as created by B<getFlowKeyHash>.  Use
+B<getFlowKeyHash> with the flow's 5-tuple and vlan to calculate
+the flow key hash.
+
+=item B<--time> I<FLOW_START_MILLISECONDS>
+
+The milliseconds since epoch time of the start time of the flow.
+B<getFlowKeyHash> can calculate the milliseconds since epoch given
+the date and time.
+
+=item B<--full-path>
+
+If present, B<yafMeta2Pcap> will open each file as given in the pcap
+metafile.  The pcap metafile given to I<--pcap-meta-file> must contain
+the full path to the pcap files.  Use if B<yaf> created the pcap files.
+
+=back
+
+=head1 Examples
+
+In the following examples, the dollar sign ("$") represents the shell
+prompt.  The text after the dollar sign represents the command line.
+Lines have been wrapped for improved readability, and the back slash
+("\") is used to indicate a wrapped line.
+
+=over 1
+
+The following example shows how to run B<yaf>, B<getFlowKeyHash>, and
+B<yafMeta2Pcap> to create a pcap for a given flow.
+
+$ yaf --in /data/some_large_file.pcap --out /data/ipfix.yaf \
+     --pcap-meta-file /tmp/pcap-info.txt
+
+$ getFlowKeyHash --sip4 10.10.25.11 --dip4 10.10.26.12 --sport 1586 \
+               --dport 80 --protocol 6 --vlan 3  --date 2011-03-21 \
+               --time 16:15:54.256
+
+KEYHASH: 100819735
+
+FILE PATH: 256/100819735-2011321161554_0.pcap
+
+MS since EPOCH: 1300724154
+
+$ yafMeta2Pcap --pcap-meta-file /tmp/pcap-info.txt \
+    --pcap /data/some_large_file.pcap \
+    --out /data/my-new-pcap.pcap --hash 100819735 --time 1300724154
+
+The following example shows how to run B<yaf> creating rolling pcap
+files and use B<yafMeta2Pcap> to create a pcap for a specific flow.
+
+$ yaf --in eth0 --out localhost --ipfix tcp --ipfix-port 18000 \
+     --pcap-meta-file /tmp/pcap-info.txt --pcap /data/pcap \
+     --live pcap
+
+$ getFlowKeyHash --sip4 10.10.25.11 --dip4 10.10.26.12 --sport 1586 \
+               --dport 80 --protocol 6 --vlan 3  --date 2011-03-21 \
+               --time 16:15:54.256
+
+KEYHASH: 100819735
+
+FILE PATH: 256/100819735-2011321161554_0.pcap
+
+MS since EPOCH: 1300724154
+
+$ yafMeta2Pcap --pcap-meta-file /tmp/pcap-info.txt --full-path\
+    --out /data/my-new-pcap.pcap --hash 100819735 --time 1300724154
+
+=back
+
+=head1 Known Issues
+
+Bug reports may be sent directly to the Network Situational Awareness team at
+E<lt>netsa-help@cert.orgE<gt>.
+
+=head1 AUTHORS
+
+Emily Sarneso and the CERT Network Situational Awareness Group Engineering Team,
+E<lt>http://www.cert.org/netsaE<gt>.
+
+=head1 SEE ALSO
+
+yaf(1), getFlowKeyHash(1)
+
+=cut

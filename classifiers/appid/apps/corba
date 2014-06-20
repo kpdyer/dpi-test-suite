@@ -1,0 +1,24 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: CORBA
+AppID: 19
+Port: tcp/683
+
+##########
+# CORBA
+
+# CORBA IIOP Protocol
+#
+# http://www.omg.org/technology/documents/formal/corba_iiop.htm
+# http://etna.int-evry.fr/~bernard/ASR/projets99-00/marc-yoseph/html/rapport.html
+
+corba_message =
+    "GIOP"			# magic cookie
+    0x01 0x00			# version (major, minor)
+    (0x00 | 0x01)		# byte order (be, le)
+    (0x00 | 0x01)		# message type (request, reply)
+    any{4}			# message size
+    ;
+
+corba = corba_message @<MATCH> any*;

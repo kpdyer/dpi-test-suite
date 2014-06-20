@@ -1,0 +1,31 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SLP
+AppID: 95
+Port: tcp/427 udp/427
+
+##########
+# SLP
+
+# Service Location Protocol Version 2
+#
+# Info: http://en.wikipedia.org/wiki/Service_Location_Protocol
+#
+# Proto: 
+# http://tools.ietf.org/html/2608 
+# http://tools.ietf.org/html/2609
+
+slp_msg = 
+    0x02				# version
+    1..11				# function id
+    any any any				# message length
+    (0x20 | 0x40 | 0x80) 0x00		# flags
+    any any any				# extension offset
+    any any				# xid
+    any any				# language tag length
+    any* :>>
+    "service:"i
+    ;
+
+slp = slp_msg @<MATCH> any*;

@@ -1,0 +1,70 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: RPC
+AppID: 87
+Port: udp/* tcp/*
+# Portmap is port 111
+# Portmap determines other ports, which could be anything
+# NFS is port 2049
+Machine: any8
+
+# RFC 1831, Section 8
+
+# This FSM excludes NFS and Mount, which are layered on RPC and part
+# of the NFS FSM.
+
+# The IANA may handle RPC number assignment in the future, including
+#   auth flavor numbers:
+# http://www3.ietf.org/proceedings/05mar/IDs/draft-ietf-nfsv4-rpc-iana-03.txt
+# Using these would result in a more specific filter.
+
+# RPC version 2 call (excluding NFS and Mount)
+rpc2_call = 
+    any{4}?		# Fragment header for TCP (section 10)
+    any{4}		# XID
+    0 0 0 0		# Type: Call (0)
+    0 0 0 2		# Version: 2
+    (((0 .. 5) any{3}) 	# Program: 0..5ffffff assigned (section 7.3)
+    -(0x00 0x01 0x86 (0xa3 | 0xa5))) # Minus NFS (100003) and Mount (100005)
+    any{4}		# Version: Not assigned
+    any{4}		# Procedure: Not assigned
+    # any{4}		# Auth credentials, Flavor: Assigned
+    # any{0, 400}	#   Body: Depends on flavor
+    # any{4}		# Auth verification, flavor: Assigned
+    # any{0, 400}	#   Body: Depends on flavor
+    # ...		# Call
+    ;
+
+# RPC version 2 replies
+#
+
+# A reply excludes any identifying information of the program (e.g.
+# NFS).  To identify an *NFS* RPC reply, we'd need to store call XIDs
+# and their associated programs.  However, the first packet in an NFS
+# flow should match the NFS RPC call machine, so this isn't necessary.
+
+# RPC version 2 reply accepted
+rpc2_reply_accepted =
+    any{4}?		# Fragment header for TCP (section 10)
+    any{4}		# XID
+    0 0 0 1		# Type: Reply (1)
+    0 0 0 0		# Status: Accepted (0)
+    # any{4}		# Auth verification, flavor: Assigned
+    # any{0, 400}	#   Body: Depends on flavor
+    # any{4}		# Status
+    ;
+
+# RPC version 2 reply denied
+rpc2_reply_denied = 
+    any{4}?		# Fragment header for TCP (section 10)
+    any{4}		# XID
+    0 0 0 1		# Type: Reply (1)
+    0 0 0 1		# Status: Denied (1)
+    0 0 0 (0 .. 1)	# Reject status: RPC_MISMATCH (0), AUTH_ERROR (1)
+    # ...		# Additional info: Depends on reject status
+    ;
+
+rpc2_reply = (rpc2_reply_accepted | rpc2_reply_denied) ;
+
+rpc = (rpc2_call | rpc2_reply) @<MATCH> any* ;

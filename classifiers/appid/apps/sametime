@@ -1,0 +1,37 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Sametime
+AppID: 91
+Port: tcp/1533
+Machine: any4
+
+##########
+# Lotus Sametime
+
+# Info: http://en.wikipedia.org/wiki/Sametime
+#
+# Proto: http://meanwhile.sourceforge.net/wiki/Meanwhile
+#
+# This signature is verified to work with the major protocol
+# version of 0x1e (30).
+
+sametime_message_type = 
+    ( 0x00 0x00 |		# handshake
+      0x80 0x00 );		# handshake ack
+
+sametime_message_options = 
+    ( 0x00 0x00 |		# none
+      0x40 0x00 |		# encrypted
+      0x80 0x00 );		# has attributes
+
+sametime_handshake = 
+    0x00 0x00 0x00 any		# message length (<256)
+    sametime_message_type	# message type
+    sametime_message_options	# message options
+    0x00 0x00 0x00 0x00		# channel id
+    0x00 0x1e			# major protocol version
+    any any			# minor protocol version
+    ;
+
+sametime = sametime_handshake @<MATCH> any*;

@@ -1,0 +1,17 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SSDP
+AppID: 101
+Port: udp/1900
+
+##########
+# SSDP
+
+# Simple Service Discovery Protocol
+#
+# Info: http://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol
+#
+# Proto: http://www.upnp.org/download/draft_cai_ssdp_v1_03.txt
+
+ssdp = ( "M-SEARCH" | "NOTIFY" ) " * HTTP/1.1\r\n" @<MATCH> any*;

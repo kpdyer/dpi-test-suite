@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+#
+# cat-file <file>
+
+if [ -f $1 ]; then
+   echo 0
+   cat $1
+else
+   echo 1
+fi   
+
+echo ~~~

@@ -1,0 +1,582 @@
+
+1.1 | 2012-08-24 15:09:04 -0700
+
+  * Fix MailAlarmsTo broctl config option. Addresses #814. (Daniel
+    Thayer)
+
+  * Fix configure script to exit with non-zero status on error. (Jon
+    Siwek)
+
+1.1-beta-2 | 2012-08-10 12:29:56 -0700
+
+  * Updates to disable STDERR printing from the reporter framework.
+    (Seth Hall)
+
+1.1-beta | 2012-07-20 07:03:21 -0700
+
+  * Fix broctl startup when using custom config file dirs. (Jon Siwek)
+
+  * Change crash report info to include stack traces from all threads.
+    (Jon Siwek)
+
+  * Changed the invocation of gdb that produces the crash report. (Jon
+    Siwek)
+
+1.0-64 | 2012-07-10 16:07:50 -0700
+
+  * Remove automatic override of config file directory with /usr prefix.
+
+  * Small updates to BroControl docs. (Daniel Thayer)
+
+1.0-58 | 2012-07-02 15:55:06 -0700
+
+  * Improvements to built-in load-balancing support. Instead of adding
+    a separate worker entry in node.cfg for each Bro worker process on
+    each worker host, it is now possible to just specify the number of
+    worker processes on each host. (Daniel Thayer)
+
+    This change adds three new keywords to the node.cfg file (to be
+    used with worker entries): lb_procs (specifies number of workers
+    on a host), lb_method (specifies what type of load balancing to
+    use: pf_ring, myricom, or interfaces), and lb_interfaces (used
+    only with "lb_method=interfaces" to specify which interfaces to
+    load-balance on).
+
+    Two new broctl plugins (which operate automatically and the user
+    doesn't need to be aware of them) are added to set the appropriate
+    environment variables when either PF_RING or myricom
+    load-balancing is being used.
+
+1.0-43 | 2012-07-02 15:40:01 -0700
+
+  * Improve README. Rewrote the section on site-specific customization
+    so that it is more clear about the load order of scripts relevant
+    to site-specific customization.  Removed the description of
+    several features that don't seem to work: "worker-1.local.bro" is
+    not automatically loaded, there is no example policy in
+    local-manager.bro, local-manager.bro and local-worker.bro do not
+    automatically load local.bro, and proxies do not automatically
+    load local-worker.bro. (Daniel Thayer)
+
+1.0-40 | 2012-06-06 11:52:06 -0700
+
+    * Fix the "cron disable" command, which didn't work. This also
+      removes the config option CronEnabled. The command is now the
+      only way to turn off cron operation. (Daniel Thayer)
+
+1.0-38 | 2012-05-24 17:42:37 -0700
+
+  * Improvements to IPv6 support. (Jon Siwek)
+
+    - Add ability to manage a cluster over non-global IPv6 scope (e.g.
+      link-local), by specifying "zone_id" keys per node in node.cfg
+      and "ZoneID" option in broctl.cfg.
+
+    - Replace socket.gethostbyname lookups with socket.getaddrinfo to
+      support IPv6.
+
+    - ::1 is now recognized as the IPv6 loopback and a "local" address
+      where before 127.0.0.1 was expected.
+
+    - Update usages of ping, ssh, rsync, and ifconfig to work with IPv6
+      addresses.
+
+    - New "IPv6Comm" option in broctl.cfg can be set to 0 to turn off
+      IPv6-based communication capabilities (on by default).
+
+1.0-35 | 2012-05-17 11:57:30 -0700
+
+  * BroControl tweaks to support non-ASCII logs. (Robin)
+
+        - The main change is that we give another argument to
+          post-processors that indicates the writer type that produced
+          the log. That comes with an incompatible part: the
+          make-archive-name script now receives the writer as its
+          2nd(!) argument. Customized versions need be adapted.
+
+        - The standard postprocessors now check whether they are
+          processing something else than ASCII logs and adapt their
+          behaviour accordingly (e.g., by not compressing, and or not
+          running trace-summary).
+
+1.0-32 | 2012-05-14 17:20:17 -0700
+
+  * Fix typos in broctl docs. (Daniel Thayer)
+
+1.0-29 | 2012-05-03 11:34:29 -0700
+
+  * Added an option to specify 'etc' directory. Addresses #801.
+    (Daniel Thayer)
+
+  * Fix typos. (Daniel Thayer)
+
+1.0-24 | 2012-04-24 14:37:49 -0700
+
+  * Update some broctl option descriptions. (Daniel Thayer)
+
+1.0-22 | 2012-04-19 09:52:44 -0700
+
+  * Options SitePolicyStandalone, SitePolicyManager, and
+    SitePolicyWorker were unused. Now they are, and they replace the
+    hard-coded defaults if defined. Addresses #797. (Daniel Thayer)
+
+1.0-20 | 2012-04-19 09:08:32 -0700
+
+  * Remove unused broctl options and fixed a couple of typos in the
+    option names. (Daniel Thayer)
+
+1.0-17 | 2012-04-16 18:06:28 -0700
+
+  * Fixed lots of documentation typos and broken links. (Daniel
+    Thayer)
+
+  * Update broctl help information. (Daniel Thayer)
+    
+
+1.0-13 | 2012-04-09 15:59:17 -0700
+
+  * Remove "-p" option from broctl "scripts" command help. (Daniel
+    Thayer)
+
+  * Updating helper script to work with conn.log in Bro 2.0. (Daniel
+    Thayer)
+
+
+1.0-9 | 2012-03-28 15:46:02 -0700
+
+  * Improve error message when failing to update broctl-config.sh
+    symlink (Jon Siwek)
+
+  * Raise minimum required CMake version to 2.6.3. (Jon Siwek)
+    
+  * Remove the unused "PolicyDirBroCtl" option. (Daniel Thayer)
+
+  * Rename the spool/policy directory so it is less visible. Addresses
+    #767. (Daniel Thayer)
+
+1.0 | 2012-01-10 18:57:50 -0800
+
+  * Tweaks for OpenBSD support. (Jon Siwek)
+
+0.5-beta-43 | 2012-01-03 14:45:40 -0800
+
+  * broctl now creates spool directories it finds missing. Addresses
+    #716. (Edward Groenendaal)
+
+0.5-beta-39 | 2011-12-16 02:49:28 -0800
+
+  * Add StopTimeout option to broctl.cfg that sets the number of
+    seconds to wait after issuing the 'stop' command before sending a
+    SIGKILL to Bro instances. Adresses #608. (Jon Siwek)
+
+  * Add CommTimeout option to broctl.cfg that sets the number of
+    seconds to timeout Broccoli connnections. Addresses #608. (Jon
+    Siwek)
+
+  * Re-order the way local.bro and local-<node>.bro scripts are
+    loaded. Node-specific local scripts now load after local.bro so
+    tha identifiers defined by the loading of local.bro can be used in
+    them. Addresses #663 (Jon Siwek)
+
+0.5-beta-34 | 2011-12-02 17:17:14 -0800
+
+  * Make BroControl more robust when a node dies. (Robin Sommer)
+
+  * Disable collecting of prof.logs. The logs can get huge, which lets
+    cron take a while. (Robin Sommer)
+
+  * Fix standalone->cluster upgrade failing to update logs/current
+    symlink. Fixes #676. (Jon Siwek)
+
+  * Fix broctl 'scripts' command in cluster mode. Fixes #655. (Jon
+    Siwek)
+
+  * Teach 'check' command to generate temporary versions of autogen.
+    files. Addresses #658. (Jon Siwek)
+
+  * Submodule README conformity changes. (Jon Siwek)
+    
+0.5-beta-20 | 2011-11-14 20:04:21 -0800
+
+  * Fixing some platforms behaving poorly during configure-time checks
+    when a superproject's languages didn't encompass a subproject's.
+    (Jon Siwek)
+
+  * Configure sendmail option in options.py instead of broctl.cfg.
+    Fixed #645. (Jon Siwek)
+
+  * Fix extraneous installation of BroControl plugins. (Jon Siwek)
+    
+  * Apply patch for BroControl Python 2.3/2.4 compatibility. Closes
+    #662. (William Jones)
+
+  * Avoid rerunning the previous command when hitting just enter in
+    broctl. (Justin Azoff)
+
+0.5-beta-12 | 2011-11-06 19:23:43 -0800
+
+  * broctl.cfg now determines sendmail location at configure-time.  
+    Addreses #645 (Jon Siwek)
+
+  * Disable log expiration by default. Addresses #613. (Jon Siwek)
+    
+  * Make symlink to broctl-config.sh update with `broctl install`.
+    Addresses #648 (Jon Siwek)
+
+  * Fixed a problem when host= in standalone is not 127.0.0.1 or
+    localhost. (Seth Hall)
+
+0.5-beta | 2011-10-27 17:45:15 -0700
+
+  * Updating submodule(s). (Robin Sommer)
+
+0.41-143 | 2011-10-26 10:15:16 -0500
+
+  * Update submodules. (Jon Siwek)
+
+0.41-142 | 2011-10-25 20:17:25 -0700
+
+  * Updating submodule(s). (Robin Sommer)
+
+0.41-137 | 2011-10-25 15:44:18 -0700
+
+  * Updating CHANGES and VERSION. (Robin Sommer)
+
+  * Make dist now cleans the copied source. (Jon Siwek)
+
+0.41-130 | 2011-10-18 08:03:35 -0700
+
+  * Distribution cleanup and some README fixes. (Robin Sommer)
+
+  * Fixed a bug caused by communication framework API update. Reported
+    by Daniel. (Seth Hall)
+
+0.41-128 | 2011-10-06 17:23:03 -0700
+
+  * Change broctl.cfg LogRotationInterval to be specificed in seconds. (Jon Siwek)
+
+  * Force broctl 'process' command to enable local logging. Addresses
+    #632 (Jon Siwek)
+
+0.41-124 | 2011-10-05 16:58:10 -0700
+
+   * New broctl.cfg option for log rotation interval. Addresses #630.
+     (Jon Siwek)
+
+   * Removed some of the broct/nodes/* scripts and instead
+     consolidated their functionality into the node-specific scripts
+     that come with Bro's cluster framework. (Jon Siwek)
+
+   * Within the cluster framework, local-<node>.bro scripts should now
+     be loaded after the distributions <node>.bro script so things can
+     be overrided. (Jon Siwek)
+
+   * Auto-generated broctl scripts are loaded after all node-specific
+     scripts and can override their options. (Jon Siwek)
+
+  * Move configuration of PFRINGClusterID from broctl.cfg.in to
+    options.py. Addresses #621. (Jon Siwek)
+
+  * Add configure-time check for libpcap PF_RING support. Addresses
+    #621 (Jon Siwek)
+
+  * Fixing typo with process command. (Robin Sommer)
+
+  * Script cleanup.  (Seth Hall)
+
+    - Reshuffling "check" functionality into check.bro.
+
+    - Removing some code to deal with the non-existent react framework.
+
+  * Give check command its own script for tuning options. Addresses
+    #618). (Jon Siwek)
+
+  * Stop and restart command now stop worker nodes first. Addresses
+    #596. (Jon Siwek)
+
+  * broctl check no longer rotates logs. Addresses #618. (Jon Siwek)
+
+0.41-101 | 2011-09-08 02:20:28 -0400
+
+  * Implementing PF_RING environment variables. (Seth Hall)
+
+0.41-99 | 2011-09-04 09:08:59 -0700
+
+  * Added --with-pcap configure option. (Jon Siwek)
+
+  * Various smaller tweaks to CMake setup. (Jon Siwek)
+
+  * Removed alarm log mailing postprocessing script from BroControl.
+    (Jon Siwek)
+
+  * Log rotation is disabled when using the 'process' command to
+    analyze trace files. (Jon Siwek)
+
+  * Fixed 'scripts' command. (Jon Siwek)
+
+  * Fixed inconsistent rotated-log naming. (Jon Siwek)
+
+  * Changed the 'mail-log' postprocessor to mail alarm.log's. (Jon
+    Siwek)
+
+  * Fix Config.state key capitalization inconsistencies. (Jon Siwek)
+
+  * Fixes for broctl 'check' command. Addresses #548. (Seth Hall and
+    Jon Siwek)
+
+  * Updated README. (Jon Siwek)
+
+  * Copy bro binary only in NFS mode (fixes #361). (Jon Siwek)
+
+  * Fix install command failing because of missing parent dirs. (Jon Siwek)
+
+  * Removing the analysis.dat file since it's not used anymore. (Seth Hall)
+
+  * Better informational output if attempt to remove old scripts
+    before installing new ones failes. Addresses #470. (Craig Leres)
+
+  * Updating log rotation support for the new logging rotation code.
+    (Seth Hall)
+
+  * Updates for cleanup and meshing with Bro reorg. (Seth Hall)
+
+0.41-73 | 2011-08-13 12:14:28 -0700
+
+  * Moving README*. into subdir doc. The top-level README is now
+    auto-generated. (Robin Sommer)
+
+0.41-68 | 2011-08-05 12:49:30 -0700
+
+  * Install example config files dynamically when the distribution
+    version differs from existing version on disk. (Jon Siwek)
+
+0.41-63 | 2011-08-03 22:10:40 -0700
+
+  * Revamped how the work is split between Bro and BroControl. Much of
+    functionality previously found in BroControl policy scripts has
+    moved over to Bro. (Seth Hall)
+
+  * Adapted BroControl to Bro 2.0 policy scripts.
+
+  * A new plugin interface allows external Python code to hook into
+    BroControl processing. See README for more information. (Robin
+    Sommer)
+
+    Two example plugins are shipped: (1) "ps.bro" shows all Bro
+    processes currently running on any cluster node, even if not
+    managed by BroControl; (2) "TestPlugin" is a demo plugin
+    demonstrating all the functionality a plugin can use (but doesn't
+    do anything sensible with it).
+
+  * A new offline mode for processing a trace. The new command
+    "process <trace>" runs Bro offline on the given trace, using the
+    current BroControl configuration. One can optionally give give
+    further Bro command line options and scripts. In cluster mode the
+    the Bro process loads both manager and worker configurations
+    simultaniously.
+
+    Addresses #273. (Robin Sommer)
+
+  * Removed the "analysis" command. (Seth Hall)
+
+  * Installation does no longer differentiate between standalone and
+    cluster mode. node.cfg now fully controls this. (Seth Hall)
+
+  * Tons of little fixes, improvements, and polishing (Seth Hall, Jon
+    Siwek, and Robin Sommer)
+
+0.41-9 | 2011-06-01 11:35:36 -0700
+
+  * Standardize shell script hashbang on install. (Jon Siwek)
+
+  * Fix binary package broctl-config.sh symlink installation
+    regression. (Jon Siwek)
+
+  * Changes to allow DEB packaging via CPack, addresses #458. (Jon Siwek)
+
+  * Fixed a problem with the "update" command, which could delete data
+    from many global state tables unintentionally. (Seth Hall)
+
+0.41-2 | 2011-05-02 11:29:07 -0700
+
+  * Symlink install scripted at install time for CMake 2.6
+    compatibility. (Jon Siwek)
+
+0.41 | 2011-04-07 21:14:53 -0700
+
+  * Tweaks to the documentation generation. (Robin Sommer)
+
+  * CMake tweaks. (Jon Siwek)
+
+  * Bugfix: trace-summary sampled in standalone mode rather than cluster
+    mode. (Robin Sommer)
+
+  * Bugfix: Creating links from the log directory to the current log files
+    didn't work in standalone mode. (Robin Sommer)
+
+0.4-19 | 2011-01-31 15:26:48 -0800
+
+  * A new option CompressLogs (default on), indicating whether
+    archived logs are to be gzipped. (Robin Sommer)
+
+  * A lot of configure/cmake/install/package tuning. (Jon Siwek)
+
+  * Adding /sbin and /usr/sbin to path local-interfaces script
+    searches for ifconfig. Closes #293. (Robin Sommer)
+
+  * Fixing uncaught exception in lock file handling. (Seth Hall).
+
+  * Making cluster event specifications redefinable. (Seth Hall).
+
+  * Fixing for pretty printing numerical values. (Seth Hall).
+
+  * Fixing "netstats" command distinction between cluster and
+    standalone mode. (Justin Azoff)
+
+0.4-10 | 2011-01-15 14:14:05 -0800
+
+  * Changes for CPack binary packaging (Jon Siwek)
+
+  * Fix package configuration macro returning from sub-project too early (Jon Siwek)
+
+  * Add warning when building and installing are done by different users (Jon Siwek)
+
+  * Changes to broctl's "make install" process (Jon Siwek)
+
+    - Simplify install by not compiling python code.
+    - The broctl-config.sh symlink needs to be made at configure time
+      and install()'ed in order for CPack packaging to correctly bundle it
+    - Reverted a change in (90ddc4d) to that caused spool/ and logs/
+      directories to not be installed in the case that they existed at
+      configure time.
+
+  * Fix for PackageMaker not accepting non-numeric versions (Jon Siwek)
+
+0.4-9 | 2011-01-12 08:51:11 -0800
+
+  * Making df portably deal with long lines in the OS's df output.
+    (Robin Sommer)
+
+0.4-8 | 2011-01-04 20:30:41 -0800
+
+  * Changing some installation paths. "broctl install" copied a
+    number of files to share/bro/*, which violates the common
+    assumption that things there are static. It can also create
+    permission problems if the user running "broctl install" is not
+    the one installing Bro. So now the pieces copied/generated by
+    "broctl install" are moved to spool/*. (Robin Sommer)
+
+  * The CMake install does no longer recreate some of the top-level
+    directories when they already exist. That makes it possible to
+    now symlink them somewhere else after the first install. (Robin
+    Sommer)
+
+  * When broctl doesn't find spool/broctl.dat it no longer aborts
+    but just warns. That allows CMake to skip installing an empty
+    one. (Robin Sommer)
+
+  * Deleting an unused policy file. (Robin Sommer)
+
+  * Updating update-changes script. (Robin Sommer)
+
+0.4-5 | 2010-12-20 14:10:25 -0800 | 768a9e550c3554de2e0bf9e3af2ae99400203046
+
+  * New helper script for maintaing CHANGES file. (Robin Sommer)
+
+0.4-1 | 2010-12-20 12:03:34 -0800 | a05be1242b4e06dca1bb1a38ed871e7e2d78181b
+
+  * Fix for dealing with large vsize values reported by "top" (Craig
+    Leres)
+
+  * Fixed the top helper script to assign the command variable
+    appropriately. (Seth Hall)
+
+  * Escape commands given to CMake's execute_process (Jon Siwek)
+
+0.4 | Fri Dec 10 01:35:36 2010 -0800 | df922e8a64a631aadb485b5044fe9ae1046d47ca
+
+- Moving BroControl to its own git repository.
+
+- Converting README to reST format.
+
+- Renamed "Capstats" config option to "CapstatsPath".
+
+- Merge with Subversion repository as of r7098. Incorporated changes:
+
+  o Increasing default timeouts for scan detector significantly.
+
+  o Increasing the manager's max_remote_events_processed to
+    something large, as it would slow down the process too much
+    otherwise and there's no other work to be interleaved with it
+    anyway.
+
+  o Adding debug output to cluster's part of catch-and-release
+    (extends the debugging already present in policy/debug.bro)
+
+  o Fixing typo in util.py. Closes #223.
+
+  o Added note to README pointing to HTML version.
+
+  o Disabling print_hook for proxies' remote.log.
+
+  o broctl's capstats now reports a total as well, and stats.log
+    tracks these totals. Closes #160.
+
+  o Avoiding spurious "waiting for lock" messages in cron mode.
+    Closes #206.
+
+  o Bug fixes for installation on NFS.
+
+  o Bug fix for top command on FreeBSD 8.
+
+  o crash-diag now checks whether gdb is available.
+
+  o trace-summary reports the sample factor in use in its output,
+    and now also applies it to the top-local-networks output (not
+    doing the latter was a bug).
+
+  o Removed the default twice-a-day rotation for conn.log. The
+    default rotation for conn.log now is now once every 24h, just
+    like for all other logs with the exception of mail.log (which is
+    still rotated twice a day, and thus the alarms are still mailed
+    out twice a day).
+
+  o Fixed the problem of logs sometimes being filed into the wrong
+    directory (see the (now gone) FAQ entry in the README).
+
+  o One can now customize the archive naming scheme. See the
+    corresponding FAQ entry in the README.
+
+  o Cleaned up, and extended, collection of cluster statistics.
+
+    ${logdir}/stats now looks like this:
+
+      drwxr-xr-x   4 bro  wheel      59392 Apr  5 17:55 .
+      drwxr-xr-x  96 bro  wheel       2560 Apr  6 12:00 ..
+      -rw-r--r--   1 bro  wheel        576 Apr  6 16:40 meta.dat
+      drwxr-xr-x   2 bro  wheel       2048 Apr  6 16:40 profiling
+      -rw-r--r--   1 bro  wheel  771834825 Apr  6 16:40 stats.log
+      drwxr-xr-x   2 bro  wheel       2048 Apr  6 16:25 www
+
+    stats.log accumulates cluster statistics collected every time
+    "cron" is called.
+
+    - profiling/ keeps the nodes' prof.logs.
+
+    - www/ keeps a subset of stats.log in CSV format for easy plotting.
+
+    - meta.dat contains meta information about the current cluster
+    state (in particular which nodes we have, and when the last
+    stats update was done).
+
+    Note that there is not Web setup yet to actually plot the data
+    in www/.
+
+  o BroControl now automatically maintains links inside today's log
+    archive directory pointing to the current live version of the
+    corresponding log file (if Bro is running). For example:
+
+    smtp.log.11:52:18-current -> /usr/local/cluster/spool/manager/smtp.log
+
+  o Alarms mailed out by BroControl now (1) have the notice msg in the
+    subject; and (2) come with the full mail.log entry in the body.

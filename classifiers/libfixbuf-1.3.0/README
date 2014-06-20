@@ -1,0 +1,83 @@
+libfixbuf aims to be a compliant implementation of the IPFIX Protocol, 
+as defined in the "Specification of the IPFIX Protocol for the Export of IP 
+Flow Information" (RFC 5101). It supports the information model
+defined in "Information Model for IP Flow Information Export"
+(RFC 5102), extended as proposed by "Bidirectional Flow Export using 
+IPFIX" (RFC 5103) to support information elements for representing biflows. 
+
+libfixbuf supports UDP, TCP, SCTP, TLS over TCP, and Spread as transport 
+protocols. Support for DTLS over UDP and DTLS over SCTP is forthcoming. It 
+also supports operation as an IPFIX File Writer or IPFIX File Reader as 
+defined in "An IPFIX-Based File Format" (draft-trammell-ipfix-file, current 
+revision -05).
+
+libfixbuf version 1.0 supports structured data elements as described in 
+"Export of Structured Data in IPFIX" (RFC 6313).  
+This adds the ability to export basicLists,
+subTemplateLists, and subTemplateMultiLists. 
+
+As of version 1.0, libfixbuf has support for NetFlow V9.  libfixbuf converts
+the NetFlow v9 to IPFIX by changing the version number, dropping the sysUpTime
+from the header and converting postOctetDeltaCount to reverseOctetDeltaCount and
+postPacketDeltaCount to reversePacketDeltaCount as described 
+in RFC 5103.  In order for tools to properly make use of Information Elements 
+that are offsets of the sysUpTime (flowStartSysUpTime), libfixbuf adds 
+Information Element 160, systemInitTimeMilliseconds, to any template (and 
+corresponding records) that contain either flowStartSysUpTime or flowEndSysUpTime.
+For any element that does not exist in libfixbuf's default Information Model 
+(above ID 346), libfixbuf will convert this Information Element to 
+"ciscoNetflowGeneric" (ID 9999) in the template.  The only exceptions are the 
+"NF_F_FW_EXT_EVENT" and "NF_F_FW_EVENT", often exported from Cisco's ASA Device 
+(http://www.cisco.com/en/US/docs/security/asa/asa82/netflow/netflow.html), which
+will be converted to separate elements 9997 and 9998 respectively.  Similarly,
+the Cisco ASA will often export elements 40001, 40002, 40003, and 40004.
+These elements are substituted with the IPFIX elements 225, 226, 227, and 228
+respectively.
+
+libfixbuf's public API is defined in public.h; see the documentation of 
+that file for general documentation on getting started with libfixbuf, as 
+well as detailed documentation on the public API calls and data types.
+
+libfixbuf API documentation is available in doc/html.
+
+Building
+--------
+
+libfixbuf uses a reasonably standard autotools-based build system. 
+The customary build procedure (./configure && make 
+&& make install) should work in most environments. 
+ 
+libfixbuf requires glib-2.0 version 2.6.4 or later. If built against
+version 2.10 or later, it will automatically use the glib slab allocator
+for increased memory allocation performance. glib is available on most
+modern Linux distributions and BSD ports collections, or in source form from
+http://www.gtk.org.
+
+libfixbuf automatically uses the getaddrinfo(3) facility and the
+accompanying dual IPv4/IPv6 stack support if present. getaddrinfo(3)
+must be present to export or collect flows over IPv6.
+
+libfixbuf does not build with SCTP support by default. The --with-sctp 
+option must be given to the libfixbuf ./configure script to include SCTP
+support. Also note that SCTP requires kernel support, and applications
+built against libfixbuf with libsctp may fail at runtime if that kernel
+support is not present.
+ 
+libfixbuf does not build with TLS support by default. The --with-openssl option
+must be given to the libfixbuf ./configure script to include TLS support.
+
+Known Issues
+------------
+
+The following are known issues with libfixbuf as of version 1.0.0:
+ 
+ * There is no support for DTLS over UDP or DTLS over SCTP transport.
+  
+ * There is no support for application-selectable SCTP stream assignment
+   or SCTP partial reliability. Templates are sent reliably on stream 0,
+   and data sets are sent reliably on stream 1.
+
+ * There is no automatic support for periodic template retransmission
+   or periodic template expiration as required when transporting IPFIX
+   over UDP. Applications using libfixbuf to transport IPFIX messages 
+   over UDP must maintain these timeouts and manually manage the session.

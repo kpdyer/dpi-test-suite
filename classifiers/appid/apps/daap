@@ -1,0 +1,12 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: DAAP
+AppID: 22
+Port: tcp/3689
+
+# DAAP is layered ontop HTTP
+# DAAP is the protocol used by iTunes
+# http://sandy.mcarthur.org/tapjam.net/daap/draft.txt
+
+daap = "GET " "daap://"i @<MATCH> any*;

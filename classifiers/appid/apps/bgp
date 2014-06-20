@@ -1,0 +1,21 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: BGP
+AppID: 14
+Port: tcp/179
+
+# http://www.ietf.org/rfc/rfc1771.txt
+#
+# Look for BGP4 OPEN messages.  In the BGP packet header, the minimum
+# value for the length field of an OPEN message is 29 bytes.
+bgp4 =
+    0xff{16}				# Marker (must be all 1's for an OPEN message)
+    ((0x00 0x1d..0xff) |		# Length (between 29 and 4096)
+    (0x01..0x10 any))
+    1					# Type (1 = OPEN message)
+    4					# Version = 4
+    any{9}				# My AS, HoldTime, BGP ID, optional params len
+    @<MATCH> any*;
+
+bgp = bgp4;

@@ -1,0 +1,34 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: DHCP
+AppID: 24
+Port: udp/67 tcp/67 udp/68 tcp/68
+#     server        client
+# Conflicts with LPD
+
+# http://www.ietf.org/rfc/rfc1541.txt
+#
+# Just check for a valid BOOTP message, followed by DHCP magic cookie.
+#
+# This can now be improved by "Semantic Conditions" in Ragel (see
+# section 6.5 in manual).  However, two notes: appid.c increases
+# about 9000 lines, and DHCP, since it is always from 0.0.0.0 to
+# 255.255.255.255 only shows up when pktengine times out the "connection"
+#
+# If pktengine included MAC address in the tuple for tracking connections,
+# then this would work.  There is little value in doing so, however.
+#
+# Note also that the 'any*' term can be replaced with any{235}, but then
+# appid.c grows by a factor of 3 or 4.
+#
+
+dhcp = 
+    # BOOTP header
+    (1 | 2)			# 1 or 2
+    any* :>>			# 235 arbitrary bytes
+    # DHCP
+    (0x63 0x82 0x53 0x63) @1
+    @<MATCH> any*
+    ;
+

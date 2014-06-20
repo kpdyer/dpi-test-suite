@@ -1,0 +1,44 @@
+
+The software in this package is distributed under the GNU General
+Public License, with a special exception described below.
+
+A copy of GNU General Public License (GPL) is included in this
+distribution, in the file COPYING.
+
+  Linking this library statically or dynamically with other modules is
+  making a combined work based on this library.  Thus, the terms and
+  conditions of the GNU General Public License cover the whole
+  combination.
+ 
+  As a special exception, the copyright holders of this library give
+  you permission to link this library with independent modules to
+  produce an executable, regardless of the license terms of these
+  independent modules, and to copy and distribute the resulting
+  executable under terms of your choice, provided that you also meet,
+  for each linked independent module, the terms and conditions of the
+  license of that module.  An independent module is a module which is
+  not derived from or based on this library.  If you modify this
+  library, you may extend this exception to your version of the
+  library, but you are not obligated to do so.  If you do not wish to
+  do so, delete this exception statement from your version.
+
+License for the Ragel-generated appid.c:
+
+[ from http://www.cs.queensu.ca/~thurston/ragel/ ]
+
+Ragel is released under the GNU General Public License. A copy of the
+license is included in the distribution. It is also available from
+GNU.
+
+Note: parts of Ragel output are copied from Ragel source covered by
+the GNU GPL. As a special exception to the GPL, you may use the parts
+of Ragel output copied from Ragel source without restriction. The
+remainder of Ragel output is derived from the input and inherits the
+copyright status of the input file. Use of Ragel makes no requirements
+about the license of generated code.
+
+License for stpy.py:
+
+    :copyright: 2006 by Armin Ronacher.
+    :license: BSD License.
+

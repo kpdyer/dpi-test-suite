@@ -1,0 +1,17 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: CVS
+AppID: 21
+Port: tcp/2401
+
+##########
+# CVS (pserver)
+
+# http://www.delorie.com/gnu/docs/cvs/cvsclient_3.html
+
+cvs_client_connect = "BEGIN " ( "AUTH" | "VERIFICATION" | "GSSAPI" ) " REQUEST\n";
+
+cvs_server_response = ( "I LOVE YOU\n" | "I HATE YOU\n" );
+
+cvs = ( cvs_client_connect | cvs_server_response ) @<MATCH> any*;

@@ -1,0 +1,75 @@
+/*
+ * Application ID library
+ *
+ * Copyright (c) 2005-2007 Arbor Networks, Inc.
+ *
+ * $Arbor: appid.h,v 1.6 2006/12/12 20:34:56 dhelder Exp $
+ */
+
+#ifndef APPID_H
+#define APPID_H
+
+/* Match confidence. */
+#define APPID_CONFIDENCE_UNKNOWN	0
+#define APPID_CONFIDENCE_PORTLOOKUP	1
+#define APPID_CONFIDENCE_LOW		2
+#define APPID_CONFIDENCE_NORMAL		3
+#define APPID_CONFIDENCE_HIGH		4
+
+/* Application IDs. */
+#define APPID_CONTINUE       -1		/* Unknown, continue calling */
+#define APPID_UNKNOWN	     0		/* Unknown, stop calling */
+<? for app in apps: ?>
+#define <?= '%-20s %-3d\t/* %s */' % 
+            ('APPID_' + app['name'].upper(), app['appid'], app['name']) ?>
+<? end ?>
+#define <?= '%-20s %d' % ('MAX_APPID', apps[-1]['appid'] + 1) ?>
+
+struct appid_rv {
+	int     application;
+	int     confidence;
+};
+
+typedef struct appid appid_t;
+
+/* Return a new appid handle, or NULL on failure. */
+appid_t *appid_open(void);
+
+/*
+ * Process data.  
+ * Returns APPID_CONTINUE, APPID_UNKNOWN, or a positive appid.
+ *
+ * ip_protocol -> IPPROTO_TCP or IPPROTO_UDP
+ *
+ * src_ip_port -> host order port number (direction A)
+ * dst_ip_port -> host order port number (direction B)
+ *
+ * payload -> byte payload data
+ * len -> payload length
+ *
+ */
+struct appid_rv appid_process(appid_t *a,
+    unsigned char proto, unsigned short sport, unsigned short dport,
+    const void *payload, size_t len);
+
+/* Close an appid handle. */
+void appid_close(appid_t **a);
+
+/* Check if appid uses a given port. */
+int appid_uses_port(int app, int proto, int port);
+
+/* Return the appid for a given port. */
+int appid_port_to_app(int proto, int port);
+
+/* Convert appid to name. */
+const char *appid_app_to_name(int appid);
+
+
+/* Debugging */
+extern int appid_debug;
+extern void appid_dump_match_conflict(void);
+
+/* simple hex dump */
+void appid_hexdump(int n, const void *buffer, int length);
+
+#endif /* APPID_H */

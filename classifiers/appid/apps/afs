@@ -1,0 +1,45 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: AFS
+AppID: 1
+Port: udp/7000 udp/7001 udp/7002 udp/7003 udp/7004 udp/7005 udp/7007 udp/7008 udp/7009 udp/7021 udp/7025 udp/7100
+Machine: any16
+
+# AFS is on layered on RX
+#
+# RX protocol spec:
+#   http://web.mit.edu/kolya/afs/rx/rx-spec
+# AFS Assigned Numbers Registry - Rx services
+#   http://grand.central.org/pages/numbers/rxservice.html
+
+afs_rx_header = 
+  any{4}		# Connection epoch
+  any{4}		# Connection ID
+  any{4}		# Call number
+  any{4}		# Sequence number
+  any{4}		# Serial number
+  (1..13)		# Type (1..13 assigned)
+  ((0x00..0x0f) |	# Flags (bits 0-3,5 assigned)
+   (0x20..0x2f))
+  any			# Status (depends on call)
+  (0..3)		# Security (0..3 assigned)
+  any{2}		# Checksum
+  (			# Service ID (See registry)
+   (0x00 0x01) |
+   (0x00 0x04) |
+   (0x00 0x34) |
+   (0x00 0x49) |
+   (0x02 0xdb) |
+   (0x02 0xdc) |
+   (0x02 0xdd) |
+   (0x57 0x2a) |
+   (0xeb 0x81)
+  )
+  #any*			# Payload
+  ;
+
+afs =
+  afs_rx_header
+  @<MATCH> any*
+  ;

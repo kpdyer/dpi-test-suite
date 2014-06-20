@@ -1,0 +1,20 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Rlogin
+AppID: 86
+Port: tcp/513
+
+##########
+# Rlogin
+
+# http://www.ietf.org/rfc/rfc1282.txt
+#
+# We can identify Rlogin by the server's password prompt
+
+rlogin_server_prompt =
+    0x00
+    "Password: "
+    ;
+
+rlogin = rlogin_server_prompt @<MATCH> any*;

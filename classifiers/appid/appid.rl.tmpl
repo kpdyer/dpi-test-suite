@@ -1,0 +1,247 @@
+/* -*- c -*-
+ *
+ * Application ID library
+ *
+ * Copyright (c) 2005-2007 Arbor Networks, Inc.
+ *
+ * $Id: appid.rl.tmpl 11 2007-07-03 23:13:44Z jon.oberheide $
+ */
+
+#include <inttypes.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* XXX - skip netinet/in.h */
+#define IPPROTO_TCP	6
+#define IPPROTO_UDP	17
+
+#include "appid.h"
+
+#define APPID_DEBUG 1
+int appid_debug = 0;
+#if APPID_DEBUG
+/* porky array, only for debug: */
+int appid_match_conflict[MAX_APPID][MAX_APPID];
+#endif
+
+<? for machine in machine_list: ?>
+<? if machine != 'dns': ?>
+struct appid_<?= machine ?> {
+	int cs;
+};
+<? end ?>
+<? end ?>
+
+struct appid_dns {
+	int	cs;
+	int	top, stack[2];  /* DNS ragel call stack is two deep */
+	uint32_t len;
+};
+
+struct appid {
+	<? for machine in machine_list: ?>
+        struct appid_<?= machine ?>	appid_<?= machine ?>;
+	<? end ?>
+	/*
+	 * state machine management - some must persist on back to
+	 * back calls to appid_process - application/protocol/quality
+	 * of match need to be saved so that state machines can see if
+	 * they should update the match when their quality is higher
+	 * than existing match.
+	 */
+	int		application;    // layer 7 application - e.g. rx, soap or xmlrpc
+	int             confidence;
+	uint8_t		ip_protocol;    // TCP/IP layer 3 protocol: 0->UDP, TCP otherwise
+	uint8_t		match_count;      // 0-> no match, 1->no recognized ambiguity, otherwise ambiguous
+	uint8_t		all_machines_rejected;
+	size_t          payload_offset;     // help find offset into stream
+	size_t          match_payload;      // offset into payload at last match
+	int             more_payload_coming;
+};
+
+void 
+appid_dump_match_conflict(void)
+{
+#if APPID_DEBUG
+    int i, j;
+    for(i = 0; i < MAX_APPID; i++) {
+        for(j = 0; j < MAX_APPID; j++) {
+            if (appid_match_conflict[i][j] > 0) {
+                printf("%s overrides %s %d times.\n",
+                    appid_app_to_name(i),
+                    appid_app_to_name(j),
+                    appid_match_conflict[i][j]);
+            }
+        }
+    }
+#else
+    printf("appid_dump_match_conflict called, but needs #define APPID_DEBUG 1 to be useful.\n");
+#endif
+}
+
+<? for machine in machine_list: ?>
+
+%%{
+	machine appid_<?= machine ?>;
+
+	# Alphabet is 0 to 255
+	alphtype unsigned char;
+
+	# Ragel
+        <?= '\n'.join([ get_app_ragel(app) 
+                        for app in apps_by_machine[machine] ]) ?>
+	apps = <?= ' | '.join([ app['name']
+                                for app in apps_by_machine[machine]
+                                if 'appid' in app and app.get('ragel') ]) ?> ;
+	main := apps;
+}%%
+
+%% write data;
+
+static int
+appid_<?= machine ?>_execute(
+	struct appid *a,
+	struct appid_<?= machine ?> *fsm,
+	unsigned char		ip_protocol,
+	unsigned short		src_ip_port,
+	unsigned short		dst_ip_port,
+	const unsigned char    *payload,
+	int			payload_length)
+{
+	const unsigned char *p = payload;
+	const unsigned char *pe = payload + payload_length;
+
+%% access fsm->;
+%% write exec;
+/*
+ * ragel doc section 5.4.4 states that 'write eof' is of no cost
+ * if no machines use the EOF transitions.  DNS does, so
+ * we include this in all
+ */
+%% write eof;
+
+	if (fsm->cs == appid_<?= machine ?>_error)
+		return (-1);
+	else if (fsm->cs >= appid_<?= machine ?>_first_final)
+		return (1);
+	return (0);
+}
+
+<? end ?>
+
+struct appid_rv
+appid_process(
+	appid_t     *a,
+	unsigned char  ip_protocol,
+	unsigned short src_ip_port,
+	unsigned short dst_ip_port,
+	const void *payload,
+	size_t      payload_length
+    )
+{
+	int rv;
+	struct appid_rv appid_rv;
+	int state_machines_executed = 0;
+	int state_machines_rejected = 0;
+#if APPID_DEBUG
+	int previous_match_count;
+#endif
+	/* Print payload */
+#if APPID_DEBUG
+	if (appid_debug) {
+		printf("%s payload on ports %d and %d:\n",
+			ip_protocol == IPPROTO_TCP ? "tcp" : "udp",
+			src_ip_port, dst_ip_port);
+		appid_hexdump(0, payload, payload_length);
+		printf("\n");
+	}
+#endif
+
+	/*
+	 * Apply each machine if there's no match yet and the machine
+	 * hasn't already rejected the stream.
+	 */
+
+<? for machine in machine_list: ?>
+	/* Apply machine '<?= machine ?>' unless it's reached REJECT (-1) */
+	if (<?= 'a->appid_%s.cs' % machine ?> >= 0) {
+		state_machines_executed++;
+#if APPID_DEBUG
+		/* for debug, see if we have increasing match counts */
+		previous_match_count = a->match_count;
+#endif
+		rv = appid_<?= machine ?>_execute(a,
+		    &<?= 'a->appid_%s' % machine ?>, ip_protocol,
+		    src_ip_port, dst_ip_port, (unsigned char *)payload,
+		    payload_length);
+		if (rv == -1) {		/* State machine rejection */
+			<?= 'a->appid_%s.cs' % machine ?> = -1;
+			state_machines_rejected++;
+#if APPID_DEBUG
+			if (appid_debug) printf("  REJECT <?= machine ?>\n");
+#endif
+		}
+#if APPID_DEBUG
+		else if (appid_debug) {
+			if (previous_match_count != a->match_count) 
+			        printf("  ACCEPT <?= machine ?> (app == %d == '%s')\n",
+					a->application, appid_app_to_name(a->application));
+			else 
+				printf("CONTINUE <?= machine ?>\\n");
+		}
+#endif
+	}
+<? end ?>
+
+	a->all_machines_rejected = state_machines_executed == state_machines_rejected;
+
+#if APPID_DEBUG
+	if (appid_debug) {
+		printf("%d machines didn't reject payload\n",
+			state_machines_executed - state_machines_rejected);
+		printf("a->application=%d (%s)\n",
+			a->application, appid_app_to_name(a->application));
+		printf("a->confidence=%d\n", a->confidence);
+		printf("ip_protocol=%d\n", ip_protocol);
+		printf("a->match_count=%d\n", a->match_count);
+		printf("a->payload_offset=%zd\n", a->payload_offset);
+		printf("a->all_machines_rejected=%d\n", a->all_machines_rejected);
+	}
+#endif
+	a->payload_offset += payload_length;
+	appid_rv.application = a->application;
+	appid_rv.confidence = a->confidence;
+	if (a->all_machines_rejected)
+		appid_rv.application = APPID_UNKNOWN;
+	return appid_rv;
+}
+			    
+appid_t *
+appid_open(void)
+{
+	struct appid *a;
+
+	if ((a = calloc(1, sizeof(*a))) == NULL)
+		return NULL;
+	
+	a->application = APPID_CONTINUE;
+	a->confidence = APPID_CONFIDENCE_UNKNOWN;
+	a->all_machines_rejected = 0;
+	a->payload_offset = 0;
+	
+<? for machine in machine_list: ?>
+	memset(&a->appid_<?= machine ?>, 0,
+	    sizeof(a->appid_<?= machine ?>));
+	a->appid_<?= machine ?>.cs = appid_<?= machine ?>_start;
+<? end ?>
+       return a;
+}
+
+void
+appid_close(appid_t **a)
+{
+	free(*a);
+	*a = NULL;
+}

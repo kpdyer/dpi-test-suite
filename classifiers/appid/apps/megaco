@@ -1,0 +1,36 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Megaco
+AppID: 52
+Port: tcp/2944 udp/2944 tcp/2945 udp/2945
+
+##########
+# Megaco
+
+# Megaco (H.248) VoIP Protocol
+# Media Gateway Controller
+#
+# ftp://ftp.rfc-editor.org/in-notes/rfc3525.txt
+#
+# Megaco has both a binary and text encoded protocol specification.
+#
+# XXX: This signature currently recognizes the text encoded protocol.
+
+megaco_eol		= ("\r\n" | "\n");
+megaco_wsp		= (" " | "\t");
+megaco_lwsp		= (megaco_wsp | megaco_eol)*;
+megaco_equal		= (megaco_lwsp "=" megaco_lwsp);
+megaco_sep		= ((megaco_wsp | megaco_eol) megaco_lwsp);
+
+megaco_authtoken	= ("Authentication"i | "AU"i);
+megaco_megacoptoken	= ("MEGACO"i | "!");
+megaco_seqnum		= ("0x" xdigit{8});
+megaco_securityindex	= ("0x" xdigit{8});
+megaco_authdata		= ("0x" xdigit{24,64});
+
+megaco_authheader	= megaco_authtoken megaco_equal megaco_securityindex ":" megaco_seqnum ":" megaco_authdata;
+megaco_header		= megaco_megacoptoken "/1" megaco_sep;
+megaco_message		= (megaco_authheader megaco_sep)? megaco_header;
+
+megaco			= megaco_message @<MATCH> any*;

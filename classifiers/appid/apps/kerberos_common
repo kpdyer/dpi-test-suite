@@ -1,0 +1,67 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Kerberos
+# Required by kerberos_tcp, kerberos_udp
+
+# RFC 1510, Section 5
+
+asn1_length = 
+    (0x00..0x7f)  | # Short form
+    (0x81 any{1}) | # Long form up to 4 bytes
+    (0x82 any{2}) |
+    (0x83 any{3}) |
+    (0x84 any{4})
+    ;
+
+
+# All CHOICES are in Kerberos are SEQUENCES.  All SEQUENCES begin with
+# two tagged INTEGERs: the protocol version and the message type.  However,
+# the first tag may be 0 or 1.
+
+# Kerberos messages where the first tag in the sequence is 0
+# Section 5.4, etc 
+kerberos_msg_tag0 = 
+    (		    # CHOICE
+     0x6b |	    # AS-REP (11)
+     0x6d |	    # TGS-REP (13)
+     0x6e |	    # AP-REQ (14)
+     0x6f |	    # AP-REP (15)
+     0x74 |	    # KRB-SAFE (20)
+     0x75 |	    # KRB-PRIV (21)
+     0x76 |	    # KRB-CRED (22)
+     0x7e	    # KRB-ERROR (30)
+    )
+    asn1_length     # CHOICE length
+    0x30	    # SEQUENCE
+    asn1_length     # SEQUENCE length
+    0xa0 3  2 1 5   # Protocol version INTEGER 5 [0]
+    0xa1 3  2 1     # Message type [1]
+      (11 | 13..15 | 20..22 | 30)
+    ;
+
+# Kerberos messages where the first tag in the sequence is 1
+# Section 5.4, etc 
+kerberos_msg_tag1 = 
+    (		    # CHOICE
+     0x6a |	    # AS-REQ (10)
+     0x6c	    # TGS-REQ (12)
+    )
+    asn1_length     # CHOICE length
+    0x30	    # SEQUENCE
+    asn1_length     # SEQUENCE length
+    0xa1 3  2 1 5   # Protocol version INTEGER 5 [0]
+    0xa2 3  2 1     # Message type [1]
+      (10 | 12)
+    ;
+
+
+# Section 5.3.1
+kerberos_ticket = 
+    0x61	    # CHOICE: TICKET (1)
+    asn1_length	    # CHOICE length
+    0x30	    # SEQUENCE
+    asn1_length     # SEQUENCE length
+    0xa0 3  2 1 5   # Ticket version INTEGER 5 [0]
+    0xa1 9 	    # Realm GeneralString [1]
+    ;

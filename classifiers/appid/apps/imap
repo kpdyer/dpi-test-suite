@@ -1,0 +1,46 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: IMAP
+AppID: 40
+Port: tcp/143
+
+# RFC 3501: IMAP 4r1
+#   Section 3: State and Flow Diagrem
+#   Section 9: Formal Syntax
+
+imap_text = [^\r\n\0] ;
+
+imap_tag = [^ +(){%*"'\\\r\n\0]+; # Also excludes "CTL"?
+# RFC uses "A###" or "A####" starting from 0
+# Pine uses a 8 byte hexadecimal string, from a random seed?
+
+# RFC 3501, section 3.4
+server_greeting =
+    "* "
+    ("OK"i | "PREAUTH"i | "BYE"i)
+    imap_text* "\r\n"
+    ;
+
+# XXX The first command is essentially unanchored, so disable to avoid
+# state blow-up.  Really it should go in its own machine.
+client_first_command =
+   imap_tag " "
+   (("NOOP"i |		# IMAP command without arguments
+     "CAPABILITY"i |
+     "STARTTLS"i) |
+    ("LOGIN"i |		# IMAP command with arguments
+     "AUTHENTICATE"i |
+     "LOGOUT"i |
+     "SELECT"i |
+     "EXAMINE"i)
+     " " imap_text*)
+   "\r\n"
+   ;
+
+# client_first_command is not used because it's currentl
+
+imap =
+    server_greeting
+    @<MATCH> any*
+    ;

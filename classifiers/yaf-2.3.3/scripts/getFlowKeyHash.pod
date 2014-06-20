@@ -1,0 +1,137 @@
+=pod
+
+=head1 NAME
+
+B<getFlowKeyHash> - YAF Flow Key Calculator
+
+=head1 SYNOPSIS
+
+    getFlowKeyHash [--sip4 IPV4_ADDRESS] [--dip4 IPV4_ADDRESS]
+                   [--sip6 IPV6_ADDRESS] [--dip6 IPV6_ADDRESS]
+                   [--sport SOURCE_PORT] [--dport DESTINATION_PORT]
+                   [--protocol PROTOCOL] [--vlan VLAN_ID]
+                   [--date FLOW_START_DATE] [--time FLOW_START_TIME]
+
+=head1 DESCRIPTION
+
+B<getFlowKeyHash> takes information about a flow and calculates the 
+B<yaf> flow key hash.  Together, the flow key hash and the start time of the
+flow will create a unique identifier for a flow.  The flow key hash and
+start time is used to identify flows with B<yaf>'s pcap export options.  
+If given the start time, B<getFlowKeyHash> will print the
+file path of the flow's pcap (helpful if B<yaf> was run with the 
+--pcap-per-flow option) and the milliseconds since epoch time (helpful
+for use with B<yaf>'s pcap-meta-file).
+
+=head1 OPTIONS
+
+The following options are required for B<getFlowKeyHash> to calculate the 
+flow key.
+
+=over 4
+
+=item B<--sip4> I<IPV4_ADDRESS>
+
+I<IPV4_ADDRESS> should be the source address of the flow in the form
+127.0.0.1.  Either --sip4 or --sip6 must be present.
+
+=item B<--dip4> I<IPV4_ADDRESS>
+
+I<IPV4_ADDRESS> should be the destination address of a flow in the form
+127.0.0.1.  Either --dip4 or --dip6 must be present.
+
+=item B<--sip6> I<IPV6_ADDRESS>
+
+I<IPV6_ADDRESS> should be the source IPv6 address of a flow in the form
+2001:48af::1:1.  Either --sip6 or --sip4 must be present.
+
+=item B<--dip6> I<IPV6_ADDRESS>
+
+I<IPV6_ADDRESS> should be the destination IPv6 address of a flow in the
+form 2001:48af::1:1. Either --dip6 or --dip4 must be present.
+ 
+=item B<--sport> I<SOURCE_PORT>
+
+I<SOURCE_PORT> should be the source port of the flow.  This number should
+be between 0 and 66535.  This is a required argument.
+
+=item B<--dport> I<DESTINATION_PORT>
+
+I<DESTINATION_PORT> should be the destination port of the flow.  This number
+should be between 0 and 65535.  This is a required argument.
+
+=item B<--protocol> I<PROTOCOL>
+
+I<PROTOCOL> is the protocol of the flow.  For TCP, I<PROTOCOL> is 6.  For UDP,
+I<PROTOCOL> is 17.  This is a required argument.
+
+=item B<--vlan> I<VLAN>
+
+I<VLAN> is the vlan ID of the flow, if available.  The default value is 0.
+
+=back
+
+=head1 Optional Arguments
+
+The following options are optional and are only necessary to calculate
+the file path of the pcap for the flow.  B<yaf> uses the milliseconds of
+the flow's start time as the file directory.  The date and time is also
+used in pcap file's name.  If the date and time are given, B<getFlowKeyHash>
+will also calculate the milliseconds since epoch, which is useful when using
+B<yaf>'s pcap-meta-files and the B<yafMeta2Pcap> tool.
+
+=over 4
+
+=item B<--date> I<FLOW_START_DATE>
+
+Specify the date in YYYY-MM-DD format; time is in UTC.
+
+=item B<--time> I<FLOW_START_TIME>
+
+Specify the time in HH:MM:SS[.sss] format.
+
+=back
+
+=head1 Examples
+
+In the following examples, the dollar sign ("$") represents the shell
+prompt.  The text after the dollar sign represents the command line.
+Lines have been wrapped for improved readability, and the back slash
+("\") is used to indicate a wrapped line.
+
+=over 1
+
+$ getFlowKeyHash --sip4 10.10.25.11 --dip4 10.10.26.12 --sport 1586 \
+               --dport 80 --protocol 6 --vlan 3
+
+KEY HASH: 100819735
+
+FILE PATH: sss/100819735-YYYYMMDDHHMMSS_0
+
+$ getFlowKeyHash --sip4 10.10.25.11 --dip4 10.10.26.12 --sport 1586 \
+               --dport 80 --protocol 6 --vlan 3  --date 2011-03-21 \
+               --time 16:15:54.256
+
+KEYHASH: 100819735
+
+FILE PATH: 256/100819735-2011321161554_0.pcap
+
+MS since EPOCH: 1300724154
+
+=back
+
+=head1 Known Issues
+
+Bug reports may be sent directly to the Network Situational Awareness team at 
+E<lt>netsa-help@cert.orgE<gt>.
+
+=head1 AUTHORS
+
+Emily Sarneso and the CERT Network Situational Awareness Group Engineering Team, 
+E<lt>http://www.cert.org/netsaE<gt>.
+
+=head1 SEE ALSO
+
+yaf(1)
+
+=cut

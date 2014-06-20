@@ -1,0 +1,8 @@
+Brian Trammell is the original author of libfixbuf.  libfixbuf is now 
+maintained by the Network Situational Awareness Group at CERT/SEI 
+<netsa-help@cert.org>.
+
+Thanks to the organizers and participants of the IPFIX Interoperability Events 
+sponsored by IPS-MoME in Salzburg, Austria in March 2006 and by Fraunhofer 
+FOKUS in Berlin, Germany in November 2006 for helping to ensure fixbuf's 
+interoperability with other IPFIX implementations.

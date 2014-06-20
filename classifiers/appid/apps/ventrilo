@@ -1,0 +1,22 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Ventrilo
+AppID: 112
+Port: tcp/3784 udp/3784
+
+##########
+# Ventrilo
+
+# Ventrilo VoIP Protocol
+#
+# Ventrilo is a voice-over-IP protocol used for many online
+# multiplayer games.
+
+ventrilo_connect =
+    0x00 any			# packet length (assume < 256)
+    any				# unknown
+    0x56 0x24 0xcf		# magic cookie
+    ;
+
+ventrilo = ventrilo_connect @<MATCH> any*;

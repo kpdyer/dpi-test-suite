@@ -1,0 +1,19 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: ISAKMP
+AppID: 44
+Port: udp/500
+Machine: any16
+	
+isakmp =
+  any{8}		# Initiator cookie
+  any{8}		# Responder cookie
+  1..13			# Next Payload (1..13 assigned)
+  0x10			# Major/minor version (1.0)
+  1..5			# Exchange type (1..5 assigned)
+  0x00..0x07		# Flags (bits 0..2 assigned)
+  #any{4}		# Message ID
+  #any{4}		# Length
+  @<MATCH> any*
+  ;

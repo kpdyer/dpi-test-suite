@@ -1,0 +1,54 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: NCP
+AppID: 58
+Port: tcp/524
+
+##########
+# NCP
+
+# NetWare Core Protocol
+#
+# Info: http://en.wikipedia.org/wiki/NetWare_Core_Protocol
+#
+# Proto:
+# http://forge.novell.com/modules/xfmod/project/?ncp
+# 
+# NCP previously operated over IPX but recent versions (>=5.0) now
+# operate over TCP.
+
+# magic numbers from linux/fs/ncpfs/sock.c
+tcp_xmit_magic = 0x44 0x6D 0x64 0x54;
+tcp_rcvd_magic = 0x74 0x4E 0x63 0x50;
+
+ncp_xmit_header = 
+    tcp_xmit_magic		# signature
+    any{4}			# length
+    0x00 0x00 0x00 0x01		# version
+    0x00 0x00 0x00 0x00		# reply buffer size
+    ;
+
+ncp_rcvd_header = 
+    tcp_rcvd_magic		# signature
+    any{4}			# length
+    ;
+
+ncp_service_request = 
+    ncp_xmit_header
+    0x11 0x11			# service connection request
+    0x00			# sequence number
+    0xff			# connection number
+    ;
+
+ncp_service_reply = 
+    ncp_rcvd_header
+    0x33 0x33			# service connection reply
+    0x00			# sequence number
+    any				# connection number
+    any				# task number
+    0x00			# reserved
+    0x00			# completion code (success)
+    ;
+
+ncp = ( ncp_service_request | ncp_service_reply ) @<MATCH> any*;

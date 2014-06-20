@@ -1,0 +1,53 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Gopher
+AppID: 120
+Port: tcp/70
+
+# RFC 1436, Appendix
+
+# A Gopher request is a single line of ASCII.
+# A Gopher response can be anything.
+#
+#gopher_unascii = (ascii - [\t\r\n\0]) ;
+#gopher_lastline = ".\r\n";
+#
+#gopher_client_request =
+#    (gopher_unascii+ "\r\n") |	# Menu or file
+#    (gopher_unascii+ "\t"	# Search with keyword
+#     gopher_unascii+ "\r\n")
+#    ;
+#
+#gopher_item_type = (lower | upper | digit | punct) ;
+#
+#gopher_dir_entry =
+#    gopher_item_type
+#    gopher_unascii+ "\t"	# User_name
+#    gopher_unascii+ "\t"	# Selector
+#    gopher_unascii+ "\t"	# Host
+#    digit+			# Port
+#    "\r\n"
+#    ;
+#
+#gopher_menu =
+#    gopher_dir_entry* 
+#    gopher_lastline
+#    ;
+#
+#gopher_textfile =
+#    any*
+#    gopher_lastline
+#    ;
+#
+#gopher_server_response =
+#    gopher_menu |
+#    gopher_textfile | 
+#    any*			# Binary file
+#    ;
+#
+#gopher = 
+#    gopher_client_request
+#    # | gopher_server_response - could be anything!
+#    @<MATCH> # no any*
+#    ;

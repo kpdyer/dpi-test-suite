@@ -1,0 +1,20 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: TACACS
+AppID: 107
+Port: tcp/49
+
+# http://www.cisco.com/warp/public/459/tac-rfc.1.76.txt
+
+tacacs_plus = 
+    0xc0				# Version (major = 0xc, minor = 0x0)
+    (0x01 | 0x02 | 0x03)		# Type
+    1					# Sequence number (first MUST be 1)
+    (0x00 | 0x01 | 0x04 | 0x05)		# Flags
+    any{4}				# Session ID (randomly chosen)
+    0 0					# Length (assume 0 < length < 65536)
+    (((any - 0) 0) | (any (any - 0)))
+    ;
+
+tacacs = tacacs_plus @<MATCH> any*;

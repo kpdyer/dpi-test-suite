@@ -1,0 +1,100 @@
+
+0.54 | 2012-08-01 13:56:08 -0500
+
+  * Fix configure script to exit with non-zero status on error (Jon Siwek)
+
+0.53 | 2012-06-11 17:25:05 -0700
+
+  * Fix overflow problems in converting Python IP addresses to
+    Broccoli. (Jon Siwek)
+
+  * Update bindings to work with Broccoli's IPv4-mapped BroAddrs. (Jon
+    Siwek)
+
+  * Update IPv6 literal syntax in test scripts. (Jon Siwek)
+    
+  * Update broccoli-python for IPv6 addr/subnet support. Addresses
+    #448. (Jon Siwek)
+
+  * Raise minimum required CMake version to 2.6.3. (Jon Siwek)
+    
+
+0.52 | 2012-01-10 16:56:13 -0800
+
+  * Submodule README conformity changes (Jon Siwek)
+
+  * Simplify finding of Python headers/libraries. Addresses #666 (Jon
+    Siwek)
+
+0.51-3 | 2011-11-03 15:17:19 -0700
+
+  * Fixing compiler warnings. Addresses #388. (Jon Siwek)
+
+0.51 | 2011-10-27 17:41:32 -0700
+
+  * Compile SWIG bindings with no-strict-aliasing. Addresses #644.
+    (Jon Siwek)
+
+0.5 | 2011-10-25 20:18:20 -0700
+
+  * Make dist now cleans the copied source. (Jon Siwek)
+
+  * Add configure-time check that swig can generate python wrappers.
+    Addresses #642. (Jon Siwek)
+
+  * Updates for changes to communication API. (Seth Hall)
+
+  * Distribution cleanup. (Jon Siwek and Robin Sommer)
+
+  * Install binaries with an RPATH (Jon Siwek)
+
+  * Remove the 'net' type from Broccoli python bindings. Aaddresses
+    #535).
+
+  * Workaround for FreeBSD CMake port missing debug flags. (Jon Siwek)
+
+  * Adjust how python-broccoli test script prints floats.
+
+  * Allow record instances that don't initialize all fields.  (Jon
+    Siwek)
+
+  * Update tests w/ example of sending a partial records. (Jon Siwek)
+
+  * Fix pybroccoli record instantiation. Declaring more than one
+    record_type could cause it to break because only the last-declared
+    record_type was used in the instantiation.  (Jon Siwek)
+
+  * Change to fill in record field names. Before, it was sending
+    records with hardcoded "<unknown>" field names. (Jon Siwek)
+
+  * Adating CMake's include path based on output of python-config.
+    (Robin Sommer)
+
+  * Teaching CMake to use python-config for finding libraries. (Robin
+    Sommer)
+
+  * Making python-broccoli work with 64-bit integers. (Robin Sommer)
+
+0.4 | 2011-07-19 17:54:35 -0700
+
+  * Improvements and fixes to record implementation. (Jon Siwek)
+
+      * Allow record instances that don't initialize all fields.
+      * Update tests w/ example of sending a partial records.
+      * Fix pybroccoli record instantiation.
+      * Change pybroccoli to fill in record field names.
+
+  * Update test bro script for new Bro policy script organization. (Jon Siwek)
+
+  * Cleanup (Seth Hall, Robin Sommer)
+
+0.3 | 2011-05-05 20:42:47 -0700
+
+  * CMake build system. (Jon Siwek).
+
+  * Adapting to work with 64-bit integers, which Bro and Broccoli are
+    now using. (Robin Sommer)
+
+0.2
+    - Repository switched to git, and README converted to reSt.
+    - License changed to BSD-style.

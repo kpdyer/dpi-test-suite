@@ -1,0 +1,46 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: RIP
+AppID: 85
+Port: udp/520
+
+##########
+# RIP
+
+# Routing Information Protocol
+# http://www.ietf.org/rfc/rfc2453.txt
+
+ripv1_entry = 
+    0 2				# address family (2=AF_INET)
+    0 0				# unused
+    any{4}			# ipv4 address
+    0 0 0 0			# unused
+    0 0 0 0			# unused
+    0 0 0 1..16			# metric (1..15=cost, 16=infinity)
+    ;
+
+ripv2_entry = 
+    0 2				# address family (2=AF_INET)
+    any any			# route tag
+    any{4}			# ipv4 address
+    any{4}			# subnet mask
+    any{4}			# next hop
+    0 0 0 1..16			# metric (1..15=cost, 16=infinity)
+    ;
+
+ripv1_message = 
+    (1 | 2)			# command (1=request, 2=response)
+    1				# version
+    0 0				# unused
+    ripv1_entry			# ripv1 entry
+    ;
+
+ripv2_message = 
+    (1 | 2)			# command (1=request, 2=response)
+    2				# version
+    0 0				# unused
+    ripv2_entry			# ripv2 entry
+    ;
+
+rip = ( ripv1_message | ripv2_message ) @<MATCH> any*;

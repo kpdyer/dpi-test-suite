@@ -1,0 +1,16 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SVN
+AppID: 105
+Port: tcp/3690
+
+##########
+# SVN
+
+# Subversion Version Control System
+# http://subversion.tigris.org/
+
+svn_server_response = "( success ( 1 2 ("i;
+
+svn = svn_server_response @<MATCH> any*;

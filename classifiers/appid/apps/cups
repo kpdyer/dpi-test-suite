@@ -1,0 +1,19 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: CUPS
+AppID: 20
+Port: udp/631
+
+# CUPS implements a protocol know as the CUPS Browsing Protocol which
+# announces the availability of IPP printers on the network.
+#
+# http://www.larim.polymtl.ca/~chuck/ethereal/packet-cups.c
+
+cups_browsing = 
+    xdigit{1,5} " "		# printer type
+    ( "3" | "4" | "5" ) " "	# printer state (idle, processing, stopped)
+    "ipp://"
+    ;
+
+cups = cups_browsing @<MATCH> any*;

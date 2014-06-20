@@ -1,0 +1,28 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: XMPP
+AppID: 117
+Port: tcp/5222 tcp/5269
+Dependency: xml
+
+##########
+# XMPP
+
+# Extensible Messaging and Presence Protocol
+# RFC 3290 - http://www.ietf.org/rfc/rfc3920.txt
+#
+# XMPP sessions for client-server and server-server connections are
+# started with a <stream:stream> tag and end appropriately with a 
+# </stream:stream> tag.
+#
+# Implementations SHOULD send an XML text declaration before sending
+# a stream header (Section 11.4).
+#
+# Sample: <?xml version="1.0"?>
+# <stream:stream xmlns:stream="http://etherx.jabber.org/streams"
+# xmlns="jabber:client" to="example.org">
+
+xmpp_new_session = xml_text_decl? xml_ws? "<stream:stream";
+
+xmpp = xmpp_new_session @<MATCH> any*;

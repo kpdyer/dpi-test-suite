@@ -1,0 +1,13 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: VNC
+AppID: 113
+Port: tcp/5901
+
+
+# VNC aka Remote Frame Buffer
+# http://www.realvnc.com/docs/rfbproto.pdf
+
+vnc = 
+    "RFB " digit digit digit "." digit digit digit 0xa @<MATCH> any*;

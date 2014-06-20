@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+#
+# gdb-attach <screen-session-name> <binary> <pid>
+
+. `dirname $0`/../broctl-config.sh
+
+session=$1
+binary=$2
+pid=$3
+
+cmds=${tmpdir}/gdb.cmd
+echo "continue" >$cmds
+
+echo 0
+screen -s $session -X quit >/dev/null 2>&1 
+screen -dmS $session gdb -x $cmds $binary $pid
+echo ~~~

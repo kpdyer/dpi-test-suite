@@ -1,0 +1,111 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(appid.h.tmpl)
+AM_INIT_AUTOMAKE(appid, 1.0)
+AM_MAINTAINER_MODE
+
+AC_PROG_CC
+AC_PROG_INSTALL
+AM_PROG_LIBTOOL
+
+dnl Checks for Python.
+dnl XXX - use AM_PATH_PYTHON after automake upgrade
+AC_MSG_CHECKING(for Python)
+AC_ARG_WITH(python,
+[  --with-python=DIR       build Python module (from optional build directory DIR, or use PATH) ],
+[ case "$withval" in
+  yes)
+     AC_MSG_RESULT(yes)
+     AC_CHECK_PROG(PYTHON, [python], python)
+     AC_CHECK_PROG(PYREX, [pyrexc], pyrexc)
+     if test "x$PYTHON" = "x"; then
+        AC_ERROR(python not found in PATH $PATH)
+     fi
+    ;;
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     AC_CHECK_PROG(PYTHON, [python], "$withval", , "$withval")
+     AC_CHECK_PROG(PYTHON, [python], "$withval/bin", , "$withval/bin")
+     if test "x$PYTHON" = "x"; then
+        AC_ERROR(python not found in $withval)
+     fi
+     ;;
+  esac 
+],
+[ AC_MSG_RESULT(no) ])
+AC_SUBST(PYTHON)
+AM_CONDITIONAL(HAVE_PYTHON, [test "x$PYTHON" != "x"])
+AM_CONDITIONAL(HAVE_PYREX, [test "x$PYREX" != "x"])
+
+dnl If we don't have python then make sure we have our generated files
+if test "x$PYTHON" == "x"; then
+   AC_CHECK_FILES(appid.rl appid.h appid_list.c, ,
+      [AC_ERROR(Python required to build from current state)])
+fi
+
+if test "x$PYREX" == "x"; then
+   AC_CHECK_FILE(pyappid.c, ,
+      [AC_ERROR(Pyrex required to build from current state)])
+fi
+
+dnl Checks for Ragel.
+AC_MSG_CHECKING(for Ragel)
+AC_ARG_WITH(ragel,
+[  --with-ragel=DIR        use Ragel to compile new appid.c (from optional build directory DIR, or use PATH) ],
+[ case "$withval" in
+  yes)
+     AC_MSG_RESULT(yes)
+     AC_CHECK_PROGS(RAGEL, [ragel], yes)
+     AC_CHECK_PROGS(RLGEN, [rlgen-cd rlcodegen], yes)
+     ;;
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -x $withval/ragel/ragel; then
+        RAGEL="$withval/ragel/ragel"
+     fi
+     if test -x $withval/rlgen-cd/rlgen-cd; then
+        RLGEN="$withval/rlgen-cd/rlgen-cd"
+     fi
+     if test -x $withval/rlcodegen/rlcodegen; then
+        RLGEN="$withval/rlcodegen/rlcodegen"
+     fi
+     if test "x$RAGEL" = "x"; then
+        AC_ERROR(ragel not found in $withval)
+     fi
+     if test "x$RLGEN" = "x"; then
+        AC_ERROR(rlgen-cd/rlcodegen not found in $withval)
+     fi
+     ;;
+  esac 
+],
+[ AC_MSG_RESULT(no) ])
+AC_SUBST(RAGEL)
+AC_SUBST(RLGEN)
+AM_CONDITIONAL(HAVE_RAGEL, [test "x$RAGEL" != "x"])
+
+dnl If we don't have Ragel make sure appid.c is already built.
+if test "x$RAGEL" == "x"; then
+   AC_CHECK_FILE(appid.c, ,
+      [AC_ERROR(Ragel required to build from current state)])
+fi
+
+# Checks for libraries.
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([string.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

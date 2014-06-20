@@ -1,0 +1,70 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: QQ
+AppID: 78
+Port: tcp/8000 udp/8000
+Machine: any
+
+##########
+# QQ
+
+# QQ IM protocol
+#
+# Info: http://en.wikipedia.org/wiki/QQ
+#
+# Proto: http://evaq.cvs.sourceforge.net/evaq/eva/src/libeva/evadefines.h?revision=1.10&view=markup
+# 
+# UDP is the primary transport used for QQ but TCP connections are
+# also supported.
+#
+# We have testcases from three clients:
+#   Gaim - uses qq_login command 
+#   Miranda - uses qq_login_token
+#   Tencent (official client) - uses qq_login_token
+
+qq_login_token = 0x00 0x62;	# login token command (miranda, tencent)
+qq_login = 0x00 0x22;		# login command (gaim)
+
+qq_header = 
+    0x02			# start tag on all QQ packets
+    any{2}			# version number
+    ;
+
+qq_tcp_token_server =
+    0x00 0x24			# static message length
+    qq_header
+    qq_login_token
+    ;
+
+qq_tcp_token_client =
+    0x00 0x0f			# static message length
+    qq_header
+    qq_login_token
+    ;
+
+qq_udp_token =
+    qq_header
+    qq_login_token
+    ;
+
+qq_tcp_login =
+    any{2}			# arbitrary message length
+    qq_header
+    qq_login
+    ;
+
+qq_udp_login = 
+    qq_header
+    qq_login
+    ;
+
+qq_connection = 
+    ( qq_tcp_token_server |
+      qq_tcp_token_client |
+      qq_udp_token | 
+      qq_udp_login | 
+      qq_tcp_login )
+    ;
+
+qq = qq_connection @<MATCH> any*;

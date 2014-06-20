@@ -1,0 +1,76 @@
+
+1.54 | 2012-08-01 13:56:22 -0500
+
+  * Fix configure script to exit with non-zero status on error (Jon Siwek)
+
+1.53 | 2012-06-11 17:25:05 -0700
+
+  * Update bindings to work with Broccoli's IPv4-mapped BroAddrs. (Jon Siwek)
+
+  * Fix count/enum being treated same as addr. (Jon Siwek)
+    
+  * Update broccoli-ruby for IPv6 addr/subnet support. Addresses #448.
+    (Jon Siwek)
+
+  * Raise minimum required CMake version to 2.6.3 (Jon Siwek)
+    
+1.52 | 2012-01-09 16:11:01 -0800
+
+  * Submodule README conformity changes (Jon Siwek)
+
+1.51-10 | 2011-11-07 05:44:17 -0800
+
+  * Ignoring some SWIG warnings. Addresses #388. (Jon Siwek)
+
+  * Changes to broccoli-ruby installation scheme. Fixes #652.
+
+    - `--home` and `--prefix` configure options are now respected when
+      installing as the main CMake project.  If not given, the Ruby
+
+    - When being installed as a CMake sub-project, then the
+      "home"-style installation is performed. (Jon Siwek)
+
+1.51 | 2011-10-26 13:51:22 -0700
+
+  * Compile SWIG bindings with no-strict-aliasing (addresses #644).
+    (Jon Siwek)
+
+1.5 | 2011-10-25 17:41:31 -0700
+
+  * Make dist now cleans the copied source. (Jon Siwek)
+
+  * Add configure-time check that swig can generate Ruby wrappers.
+    Addresses #642. (Jon Siwek)
+
+  * Distribution cleanup. (Robin Sommer)
+
+  * Updates to work with communication API changes. (Seth Hall)
+
+  * Reorganized the module names.  From ruby, a user now loads the
+    "broccoli" module.  This automatically pulls in the swig wrapper
+    named "broccoli_ext".  (Seth Hall)
+
+  * Building with cmake completely works now. (Seth Hall)
+
+  * Updates for the change to 64-bit ints. (Seth Hall)
+
+  * Fixes for the example script. (Seth Hall)
+
+  * New example script that points out a bug in broccoli. (Seth Hall)
+
+  * Remove the 'net' type from Broccoli ruby bindings. Addresses #535.
+    (Jon Siwek)
+
+  * Install binaries with an RPATH (Jon Siwek)
+
+1.4 | 2011-02-25 21:26:49 -0500
+
+  * Cleaning up and adding a configure script. (Seth Hall)
+
+  * Ruby 1.8 is now required. (Seth Hall)
+
+  * CMake fixes. (Seth Hall and Jon Siwek)
+
+  * Initial import. (Seth Hall)
+
+

@@ -1,0 +1,28 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SOAP
+AppID: 99
+Port: tcp/*
+
+##########
+# Simple Object Access Protocol
+
+# http://www.w3.org/TR/soap12-part0/
+#
+# HTTP is the most common transport for SOAP.
+
+soap_post = 
+   "POST " [^ ]+ " HTTP/1.1\r\n"	# HTTP/1.1 POST
+   (((any - [\r])+ "\r\n")*) :>>	# additional HTTP headers
+   ( "Content-Type:"i [ \t]*		# application/soap+xml
+     "application/soap+xml"i )
+   ;
+
+soap_response =
+   "HTTP/1.1 200 OK\r\n"		# HTTP/1.1 OK response
+   "Content-Type:"i [ \t]*		# application/soap+xml
+   "application/soap+xml"i
+   ;
+
+soap = ( soap_post | soap_response ) @<MATCH> any*;

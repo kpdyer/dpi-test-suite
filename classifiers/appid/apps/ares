@@ -1,0 +1,25 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Ares
+AppID: 13
+Port: tcp/59049
+
+##########
+# Ares
+
+# Ares P2P Protocol
+#
+# http://aresgalaxy.sourceforge.net/
+# http://developer.berlios.de/projects/gift-ares/
+#
+# Ares file transfers are compressed and encrypted making
+# identification difficult.
+
+ares_client_connect = 
+    0x03 0x00			# length of client syn
+    0x5a			# client syn command
+    0x06 0x06 0x05		# protocol version
+    ;
+
+ares = ares_client_connect @<MATCH> any*;

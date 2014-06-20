@@ -1,0 +1,159 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: NetFlow
+AppID: 60
+Port: udp/5000
+
+# NetFlow header and record formats taken from:
+# fprobe - http://fprobe.sourceforge.net/
+# pmacct - http://www.pmacct.net/
+# nnfc - http://sourceforge.net/projects/nnfc/
+# and also documentation from Cisco's site:
+# http://www.cisco.com/univercd/cc/td/doc/product/rtrmgmt/nfc/nfc_3_6/iug/format.htm
+
+# NetFlow v1
+
+netflow1_header =
+    0 1                 # netflow v1
+    0 1..24             # num flow records (max 24)
+    any{4}              # system uptime
+    any{4}              # epoch seconds
+    any{4}              # epoch nanoseconds
+    ;
+
+netflow1_record =
+    any{4}              # src ip
+    any{4}              # dst ip
+    any{4}              # next hop ip
+    any{2}              # snmp index of input intf
+    any{2}              # snmp index of output intf
+    any{4}              # packets in flow
+    any{4}              # total layer3 bytes
+    any{4}              # sysuptime at flow start
+    any{4}              # sysuptime at flow end
+    any{2}              # src port
+    any{2}              # dst port
+    0x00 0x00           # unused pad
+    any                 # proto type
+    any                 # ip tos
+    any                 # tcp flags
+    0x00{7}             # unused pad
+    ;
+
+netflow1 = netflow1_header netflow1_record;
+
+# NetFlow v5
+
+netflow5_header =
+    0 5                 # netflow v5
+    0 1..30             # num flow records (max 30)
+    any{4}              # system uptime
+    any{4}              # epoch seconds
+    any{4}              # epoch nanoseconds
+    any{4}              # total flows
+    (0 | 1)             # engine type (0 for RP, 1 for VIP/LC)
+    any                 # engine slot number
+    any{2}              # sample mode/interval
+    ;
+
+netflow5_record =
+    any{4}              # src ip
+    any{4}              # dst ip
+    any{4}              # next hop ip
+    any{2}              # snmp index of input intf
+    any{2}              # snmp index of output intf
+    any{4}              # packets in flow
+    any{4}              # total layer3 bytes
+    any{4}              # sysuptime at flow start
+    any{4}              # sysuptime at flow end
+    any{2}              # src port
+    any{2}              # dst port
+    0x00                # unused pad
+    any                 # tcp flags
+    any                 # proto type
+    any                 # ip tos
+    any{2}              # src as
+    any{2}              # dst as
+    any                 # src prefix mask
+    any                 # dst prefix mask
+    0x00 0x00           # unused pad
+    ;
+
+netflow5 = netflow5_header netflow5_record;
+
+# NetFlow v7
+
+netflow7_header =
+    0 7                 # netflow v7
+    0 1..27             # num flow records (max 27)
+    any{4}              # system uptime
+    any{4}              # epoch seconds
+    any{4}              # epoch nanoseconds
+    any{4}              # total flows
+    0x00{4}             # unused pad
+    ;
+
+netflow7_record =
+    any{4}              # src ip
+    any{4}              # dst ip
+    any{4}              # next hop ip
+    any{2}              # snmp index of input intf
+    any{2}              # snmp index of output intf
+    any{4}              # packets in flow
+    any{4}              # total layer3 bytes
+    any{4}              # sysuptime at flow start
+    any{4}              # sysuptime at flow end
+    any{2}              # src port
+    any{2}              # dst port
+    any                 # flags
+    any                 # tcp flags
+    any                 # proto type
+    any                 # ip tos
+    any{2}              # src as
+    any{2}              # dst as
+    any                 # src prefix mask
+    any                 # dst prefix mask
+    any{2}              # flags
+    any{4}              # router ip
+    ;
+
+netflow7 = netflow7_header netflow7_record;
+
+# NetFlow v8
+
+netflow8_header =
+    0 8                 # netflow v8
+    0 1..51             # num flow records (max 51)
+    any{4}              # system uptime
+    any{4}              # epoch seconds
+    any{4}              # epoch nanoseconds
+    any{4}              # total flows
+    any                 # engine type
+    any                 # engine slot number
+    any                 # aggregation method
+    any                 # aggregation export
+    0x00{4}             # unused pad
+    ;
+
+netflow8 = netflow8_header;
+
+# NetFlow v9
+# RFC 3954, section 5
+# http://www.faqs.org/rfcs/rfc3954.html
+#
+# If records are 40 bytes each, a UDP packet can hold at most 1637
+# (0x0665) records.
+
+netflow9_header = 
+    0 9                 # netflow v9
+    0..6 any		# num flow records
+    any{4}              # system uptime
+    any{4}              # epoch seconds
+    any{4}              # sequence number
+    any{4}              # source id
+    ;
+
+netflow9 = netflow9_header;
+
+netflow = ( netflow1 | netflow5 | netflow7 | netflow8 | netflow9 ) @<MATCH> any*;

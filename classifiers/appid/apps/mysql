@@ -1,0 +1,20 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: MySQL
+AppID: 57
+Port: tcp/3306
+Machine: any
+
+# MySQL 10
+# http://www.redferni.uklinux.net/mysql/MySQL-Protocol.html
+
+mysql_server_greeting =
+    any 0 0    	    # Length (assume < 256 bytes)
+    0		    # Packet number
+    10		    # Protocol
+    ascii+ 0;	    # Version string
+
+# MySQL client authentication can be almost anything
+
+mysql = mysql_server_greeting @<MATCH> any*;

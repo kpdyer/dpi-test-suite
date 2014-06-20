@@ -1,0 +1,11 @@
+#!/bin/sh
+
+aclocal
+# XXX - MacOS X
+if [ -x /usr/bin/glibtoolize ]; then
+    glibtoolize --copy
+else
+    libtoolize --copy
+fi
+autoconf
+automake --foreign --copy --ignore-deps --add-missing

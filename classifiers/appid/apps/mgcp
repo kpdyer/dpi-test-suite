@@ -1,0 +1,25 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: MGCP
+AppID: 53
+Port: udp/2727 udp/2427
+
+##########
+# MGCP
+
+# Media Gateway Control Protocol
+#
+# http://www.ietf.org/rfc/rfc3435.txt
+
+mgcp_eol		= ( "\r\n" | "\n" );
+mgcp_wsp		= ( " " | "\t" );
+mgcp_verb		= ( "EPCF"i | "CRCX"i | "MDCX"i | "DLCX"i | "RQNT"i |
+			    "NTFY"i | "AUEP"i | "AUCX"i | "RSIP"i );
+mgcp_version		= ( "MGCP 1.0" );
+mgcp_transid		= digit{1,9};
+
+mgcp_command		= mgcp_verb mgcp_wsp{1,} mgcp_transid mgcp_wsp{1,}
+			  any* :>> mgcp_version;
+
+mgcp			= mgcp_command @<MATCH> any*;

@@ -1,0 +1,23 @@
+#! /usr/bin/env bash
+#
+# is-alive <host>
+
+. `dirname $0`/broctl-config.sh
+
+if [[ "$1" == *:* ]]; then
+    cmd_linux='ping6 -c 1 -W 1'
+    cmd_bsd='ping6 -q -o'
+else
+    cmd_linux='ping -c 1 -W 1'
+    cmd_bsd='ping -q -t 1 -o'
+fi
+
+if [ "${os}" == "linux" ]; then
+   cmd=$cmd_linux
+else
+   cmd=$cmd_bsd
+fi
+
+$cmd $1 >/dev/null 2>&1 || exit 1
+
+ssh -o ConnectTimeout=30 $1 true >/dev/null 2>&1

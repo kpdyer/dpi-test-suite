@@ -1,0 +1,14 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: RTP
+AppID: 89
+Port: udp/5004
+
+# RTP - Real-time Transport Protocol 
+# http://www.ietf.org/rfc/rfc3550.txt
+
+# XXX - RTP streams are identified by pktengine which decodes the higher-layer
+# protocols (i.e., SDP contained within RTSP or SIP flows).  We include this
+# signature file only for the convenience of defining the app name and port.
+rtp = empty;

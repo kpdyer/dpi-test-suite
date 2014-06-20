@@ -1,0 +1,69 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: AIM
+AppID: 12
+Port: tcp/5190
+Machine: any
+
+##########
+# AIM
+
+# OSCAR
+# http://www.oilcan.org/oscar/
+
+# OSCAR file transfer has two different modes, a direct connection
+# from peer to peer, and a proxied connection for when a direct
+# connection it not available (NAT, etc).
+#
+# See src/protocols/oscar/peer.c/h from Gaim for details.
+
+oscar_proxy_ft = 
+    any any				# length
+    0x04 0x4a				# packet version (AIM_RV_PROXY_PACKETVER_DFLT)
+    0x00 (0x02 | 0x03 | 0x04)		# cmd type (SEND | RECV | ACK))	
+    0x00 0x00 0x00 0x00			# unknown (AIM_RV_PROXY_UNKNOWNA_DFLT)
+    ((0x00 0x00) | (0x02 0x20))		# flags (client, server)
+    ;
+
+oscar_direct_ft =
+    "OFT2"i				# Oscar File Transfer token
+    any any				# OFT message length
+    0x01 0x01				# OFT message type (PEER_TYPE_PROMPT)
+    ;
+
+oscar_direct_im =
+    "ODC2"i				# Oscar Direct Connect token
+    any any				# ODC message length
+    0x00 0x05				# ODC message type (PEER_TYPE_DIRECTIM_ESTABLISHED)
+    ;
+
+# OSCAR clients first log into an authorization server and gets a 256
+# byte cookie.  That cookie is used to login into subsequent OSCAR
+# servers.  The first login response is identical to the response
+# received from the server for a TOC client login.
+
+oscar_new_connection =
+    0x2a		# Command Start
+    0x01		# Channel ID: New Connection
+    any any		# Sequence number
+    ((0x00 0x04 any any any any) | # First login: length 4
+     (0x01 0x08 any any any any    # Second login: length 264
+      0x00 0x06                    # Value ID: Auth cookie (6)
+      0x01 0x00			   # Length: 256
+      any{256}))
+    ;
+
+# TOC
+# http://simpleaim.sourceforge.net/docs/TOC.txt
+#
+# TOC clients send the literal string "FLAPON\r\n\r\n" to signal a
+# new connection.
+
+toc_new_connection = "FLAPON\r\n\r\n"i;
+
+aim = ( oscar_proxy_ft | 
+        oscar_new_connection | 
+	oscar_direct_ft |
+	oscar_direct_im |
+        toc_new_connection ) @<MATCH> any*;

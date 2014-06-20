@@ -1,0 +1,42 @@
+
+appid
+-----
+
+Appid is a passive application protocol identification library that
+implements a state machine for efficient pattern matching of
+regex-like application content signatures.
+
+It uses the excellent Ragel finite state machine compiler to compile
+multiple patterns into a single combined machine for one-pass
+evaluation of a given input stream.
+
+For more information about the signature format, library internals,
+and general hacking, see the HACKING file in this distribution.
+
+Appid is an open-source contribution of Arbor Networks' technology to
+the community many of its developers came from. For licensing
+information, please see the LICENSE file in this distribution.
+
+Building
+--------
+
+To build and install the library:
+
+	./configure	(add '--with-python' to build Python module)
+	make
+	sudo make install
+
+The ragel-generated appid.c takes a lot of memory to compile. If you
+run into a compiler error like "virtual memory exhausted", you may
+need to increase your resource limits before compiling with "unlimit"
+(*csh) or "ulimit" (*sh).
+
+Support
+-------
+
+For more information, visit our project website at
+
+	http://code.google.com/p/appid/
+
+--
+Appid team <appid@googlegroups.com>

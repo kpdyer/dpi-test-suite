@@ -1,0 +1,30 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Quake1
+AppID: 79
+Port: udp/26000
+
+##########
+# Quake1
+
+# Quake 0.91, 0.92, 1.00, 1.01
+#
+# http://www.gamers.org/dEngine/quake/spec/quake-spec34/qkspec_8.htm
+# http://www.gamers.org/dEngine/quake/QDP/qnp.html
+#
+# TODO: Quake1 session data looks like DNS on the wrong port.
+# To fix this, we need a Quake1 application plugin decoder to
+# track the ephemeral port (in the Quake server reply), then
+# mark that port as a Quake1 stream.
+#
+
+quake1_conn_request = 
+    0x80 0x00			# control message type
+    0x00 0x0c			# length of message (12)
+    0x01			# connection request type
+    "QUAKE"i 0x00		# game name string
+    0x03			# protocol version
+    ;
+
+quake1 = quake1_conn_request @<MATCH> any*;

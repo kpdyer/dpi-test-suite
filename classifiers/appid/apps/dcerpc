@@ -1,0 +1,82 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: DCERPC
+AppID: 23
+Port: udp/* tcp/*
+# Depended on by mapi
+# epmap (DCE endpoint resolution) - port 135
+
+# X/Open DCE: Remote Procedure Call
+# http://www.opengroup.org/pubs/catalog/c309.htm
+# Section 12.6: Connection-oriented RPC PDUs, p. 522-
+
+# XXX: Fragmentation is allowed within the protocol
+
+
+dcerpc_version =
+    5 0		# Version: 5.0
+    ;
+
+dcerpc_flags_dr_frag_auth_callid =
+    any		# PFC flags (Section 12.6.3.1)
+    (0x00 | 0x01 | 0x10 | 0x11)	# DR: Integer/character [*]
+    (0 .. 3)	# DR: Floating point (0..3 assigned)
+    0 0		# DR: Reserved
+    any{2}	# Fragment length
+    any{2}	# Auth length
+    any{4}	# Call identifier
+    ;
+
+dcerpc_non_bind =
+    dcerpc_version
+    ((0 .. 19) - 11)	# Packet type (0 .. 19 assigned, Bind (11) below)
+    dcerpc_flags_dr_frag_auth_callid
+    #any*		# ...
+    ;
+
+dcerpc_uuid_mapi = # a4f1db00-ca47-1067-b41f-00dd010662da
+    0x00 0xdb 0xf1 0xa4			# Time low
+    0x47 0xca 				# Time mid
+    0x67 0x10 				# Time high and version
+    0xb3 0x1f				# Clock seq, clock seq low
+    0x00 0xdd 0x01 0x06 0x62 0xda	# Node
+    ;
+# This is little-endian.  Endian matters for the time fields.
+
+dcerpc_bind_extra = 
+    any{2}	# Max transmit frag size
+    any{2}	# Max receive frag size
+    any{4}	# Assoc group ID
+    # p_cont_list:
+     any	# Number of items in list
+     0 0 0	# Reserved
+     # p_cont_elem+:  # One or more context elements
+      any{2}	# Context id
+      any	# Number of items
+      0		# Reserved
+      # p_syntax_id:
+       #any{16}	# UUID
+       #any{4}	# Interface version
+    ;
+
+dcerpc_bind_pre_uuid =
+    dcerpc_version
+    11					# Packet type: Bind (11)
+    dcerpc_flags_dr_frag_auth_callid
+    dcerpc_bind_extra
+    ;
+
+dcerpc_bind = 
+    dcerpc_bind_pre_uuid
+    (any{16} - dcerpc_uuid_mapi)	# UUID
+    ;
+
+dcerpc = 
+    (dcerpc_non_bind | dcerpc_bind) 
+    @<MATCH> any* 
+    ;
+
+# [*] Data representation byte 0: (Section 14)
+#   Top 4 bits are integer representation (0 and 1 assigned)
+#   Bottom 4 bits are character representation (0 and 1 assigned)

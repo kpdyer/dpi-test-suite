@@ -1,0 +1,11 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: RTSP
+AppID: 90
+Port: tcp/554 udp/554
+
+# RTSP - Real Time Streaming Protocol
+# http://www.ietf.org/rfc/rfc2326.txt
+
+rtsp = "RTSP/1.0 " digit{3} [^\r\n]* 0xd 0xa @<MATCH> any*;

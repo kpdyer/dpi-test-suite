@@ -1,0 +1,14 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: RDT
+AppID: 83
+Port: udp/6970 tcp/6970
+
+# RDT - Real Data Transport
+# http://docs.real.com/docs/rtsp.pdf
+
+# XXX - RDT streams are identified by pktengine which decodes the higher-layer
+# protocol (i.e., "Transport" field contained within RTSP).  We include this
+# signature file only for the convenience of defining the app name and port.
+rdt = empty;

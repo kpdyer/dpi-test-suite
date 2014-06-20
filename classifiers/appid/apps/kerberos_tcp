@@ -1,0 +1,15 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Kerberos
+AppID: APPID_KERBEROS
+# Port: tcp/88 tcp/4444
+Requires: kerberos_common
+Machine: any4
+
+kerberos_tcp = 
+    ((any{4} kerberos_msg_tag0) |
+     (any{4} kerberos_msg_tag1) |
+     (any{4} kerberos_ticket))
+    @<MATCH> any*
+    ;

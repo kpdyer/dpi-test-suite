@@ -1,0 +1,100 @@
+#! /usr/bin/env bash
+#
+# TEST_MODE={TEST|UPDATE|UPDATE_INTERACTIVE}
+# TEST_BASELINE
+# TEST_DIAGNOSTICS
+# TEST_NAME
+#
+# TEST_DIFF_CANONIFIER
+# TEST_DIFF_BRIEF
+
+if [ "$TEST_DIAGNOSTICS" = "" ]; then
+    TEST_DIAGNOSTICS=/dev/stdout
+fi
+
+if [ "$#" -lt 1 ]; then
+   echo "btest-diff: wrong number of arguments" >$TEST_DIAGNOSTICS
+   exit 1
+fi
+
+input=$1
+canon=`echo $input | sed 's#/#.#g'`
+shift
+
+if [ ! -f $input ]; then
+   echo "btest-diff: input $input does not exist." >$TEST_DIAGNOSTICS
+   exit 1
+fi
+
+tmpfiles=""
+function delete_tmps {
+     rm -f $tmpfiles 2>/dev/null
+}
+
+trap delete_tmps 0
+
+result=2
+
+rm -f $TEST_DIAGNOSTICS  2>/dev/null
+
+echo "== File ===============================" >>$TEST_DIAGNOSTICS
+
+if [ "$TEST_DIFF_BRIEF" == "" -o ! -e $TEST_BASELINE/$canon ]; then
+    cat $input >>$TEST_DIAGNOSTICS
+else
+    echo "<Content not shown>" >>$TEST_DIAGNOSTICS
+fi
+
+if [ -e $TEST_BASELINE/$canon ]; then
+
+   if [ "$TEST_DIFF_CANONIFIER" != "" ]; then
+       diff1=/tmp/test-diff.$$.$canon.baseline.tmp
+       diff2=/tmp/test-diff.$$.$canon.tmp
+       tmpfiles="$tmpfiles $diff1 $diff2"
+
+       eval $TEST_DIFF_CANONIFIER <$TEST_BASELINE/$canon >$diff1
+       eval $TEST_DIFF_CANONIFIER <$input >$diff2
+   else
+       diff1=$TEST_BASELINE/$canon
+       diff2=$input
+   fi
+
+   echo "== Diff ===============================" >>$TEST_DIAGNOSTICS
+   diff -au $@ $diff1 $diff2 >>$TEST_DIAGNOSTICS
+   result=$?
+else
+   echo "== Error ===============================" >>$TEST_DIAGNOSTICS
+   echo "test-diff: no baseline found." >>$TEST_DIAGNOSTICS
+   result=100
+fi
+
+echo "=======================================" >>$TEST_DIAGNOSTICS
+
+if [ "$TEST_MODE" == "TEST" ]; then
+   exit $result
+
+elif [ "$TEST_MODE" == "UPDATE_INTERACTIVE" ]; then
+
+   if [ "$result" == 0 ]; then
+       exit 0
+   fi
+
+   btest-ask-update
+   rc=$?
+
+   echo -n "$TEST_NAME ..." >/dev/tty
+
+   if [ $rc == 0 ]; then
+       cp $input $TEST_BASELINE/$canon
+       exit 0
+   fi
+
+   exit $rc
+
+elif [ "$TEST_MODE" == "UPDATE" ]; then
+   cp $input $TEST_BASELINE/$canon
+   exit 0
+fi
+
+echo "test-diff: unknown test mode $TEST_MODE" >$TEST_DIAGNOSTICS
+exit 1

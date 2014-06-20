@@ -1,0 +1,18 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Syslog
+AppID: 106
+Port: udp/514
+
+
+# RFC 3164
+# Format: "<" <"0"-"193"> ">" ...
+syslog = 
+    "<" 
+    ( (digit) |			   # 0-9
+      (digit digit) |		   # 10-99
+      ("1" ("0" .. "8") digit) |   # 100-189
+      ("1" "9" ("0" .. "3")) )	   # 190-193
+    ">"
+    @<MATCH> any*;

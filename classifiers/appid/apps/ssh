@@ -1,0 +1,8 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SSH
+AppID: 102
+Port: tcp/22
+
+ssh = "SSH-" digit+ "." digit+ @<MATCH> any* ;

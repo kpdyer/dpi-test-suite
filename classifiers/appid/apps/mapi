@@ -1,0 +1,17 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: MAPI
+AppID: 50
+Port: udp/* tcp/*
+Requires: dcerpc
+# Port can be determined from looking at EPM replies
+
+# MAPI is DCE-RPC with an specific interface.  Look for a DCE-RPC bind
+# to that interface.
+
+mapi = 
+    dcerpc_bind_pre_uuid
+    dcerpc_uuid_mapi		# MAPI UUID
+    @<MATCH> any*
+    ;

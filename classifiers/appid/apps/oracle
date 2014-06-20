@@ -1,0 +1,33 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Oracle
+AppID: 67
+Port: tcp/1521 udp/1521
+Machine: any
+
+##########
+# Oracle
+
+# Oracle TNS Protocol
+#
+# Originally from dsniff.magic.  Modified to be less strict on
+# options and versions.
+
+tns_connect =
+    any any			# packet length
+    0x00 0x00			# packet checksum
+    0x01			# packet type connect
+    0x00			# reserved byte
+    0x00 0x00			# header checksum
+    0x01 any			# version (256-511)
+    0x01 0x2c			# version compatible (300)
+    any any			# service options
+    0x08 0x00			# session data unit size
+    0x7f 0xff			# max trasmission data unit size
+    any any			# nt protocol characteristics
+    0x00 0x00			# line turnaround value
+    0x00 0x01			# value of 1 in hardware
+    ;
+
+oracle = tns_connect @<MATCH> any*;

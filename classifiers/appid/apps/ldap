@@ -1,0 +1,47 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: LDAP
+AppID: 47
+Port: tcp/389 udp/389
+
+# LDAP is ASN.1 encoded
+
+# RFC 1777: LDAP v2
+# RFC 2251: LDAP v3, Section 4
+
+# This fingerprint is bidirectional
+
+ldap =
+  0x30 any+	        # SEQUENCE
+  0x02 			# INTEGER: Message ID (0 .. 2^31-1)
+    ((1 any{1}) |       #   Length and contents
+     (2 any{2}) |
+     (3 any{3}) |
+     (4 any{4}))
+  (			# CHOICE
+   0x60 | 		# BindRequest (0)
+   0x61 |	        # BindResponse (1)
+   0x62 | 		# UnbindReques (2)
+   0x63 | 		# SearchRequest (3)
+   0x64 | 		# SearchResultEntry (4)
+   0x65 | 		# SearchResutlDone (5)
+   0x71 | 		# SearchResultReference (17) (LDAP v3)
+   0x66 | 		# ModifyRequest (6)
+   0x67 | 		# ModifyResponse (7)
+   0x68 | 		# AddRequest (8)
+   0x69 | 		# AddResponse (9)
+   0x6a | 		# DelRequest (10)
+   0x6b | 		# DelResponse (11)
+   0x6c | 		# ModifyDNRequest (12)
+   0x6d | 		# ModifyDNResponse (13)
+   0x6e | 		# CompareRequest (14)
+   0x6f | 		# CompareResponse (15)
+   0x70 | 		# AbandonRequest (16)
+   0x77 | 		# ExtendedRequest (23) (LDAP v3)
+   0x78 		# ExtendedResponse (24) (LDAP v3)
+  ) # All choices are constructed applications (bits 6 and 7 set)
+  @<MATCH> any*
+  ;
+
+# LDAP v2 requires the client to send a BindRequest first.

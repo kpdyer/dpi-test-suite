@@ -1,0 +1,35 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: NFS
+AppID: 61
+Port: udp/* tcp/*
+# NFS uses port 2049 TCP/UDP
+# Mountd can use any port TCP/UDP (usually UDP)
+Dependency: rpc
+Machine: any8
+
+# NFS over RPC call version 2 (see "rpc")
+nfs_rpc2_call = 
+    any{4}?		# Fragment header for TCP (section 10)
+    any{4}		# XID
+    0 0 0 0		# Type: Call (0)
+    0 0 0 2		# Version: 2
+    (0x00 0x01 0x86	# Program: NFS (100003) or Mount (100005)
+     (0xa3 | 0xa5))
+    # any{4}		# Version: Not assigned
+    # any{4}		# Procedure: Not assigned
+    # any{4}		# Auth credentials, Flavor: Assigned
+    # any{0, 400}	#   Body: Depends on flavor
+    # any{4}		# Auth verification, flavor: Assigned
+    # any{0, 400}	#   Body: Depends on flavor
+    # ...		# NFS call
+    ;
+
+# RPC response does not include the program number.  We can't tell
+# whether a response is to a NFS call without tracking the XID and
+# program number of all calls.  This shouldn't matter since the call
+# will be the first packet in the flow and will determine the AppID of
+# the flow.
+
+nfs = nfs_rpc2_call @<MATCH> any* ;

@@ -1,0 +1,55 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: IAX
+AppID: 36
+Port: udp/4569
+Machine: any
+
+##########
+# IAX
+
+# Inter-Asterisk eXchange protocol
+# 
+# http://www.ietf.org/internet-drafts/draft-guy-iax-01.txt
+
+# A NEW message is sent to initiate a call.  It is the first call-
+# specific message sent to initiate an actual media exchange between
+# two peers.  'NEW' messages are unique in that they do not require a
+# destination call identifier in their header.  This absence is because
+# the remote peer's source call identifier is not created until after
+# receipt of this frame.  Before sending a NEW message, the local IAX
+# peer MUST assign a source call identifier that is not currently being
+# used for another call.  A time-stamp MUST also be assigned for the
+# call, beginning at 0 and incrementing each millisecond.  Sequence
+# numbers for a NEW message, described in the transport section, are
+# both set to 0.
+
+# A NEW message MUST include the 'version' IE, and it MUST be the first
+# IE.
+
+# The timestamp is the amount of time passed since the call was 
+# initiated.  Since the NEW message is the first message sent in the 
+# call, the timestamp is usually between 0-10 ms.  Assuming it is less
+# than than 65536 ms is a very safe assumption.
+
+iax_version_ie = 
+    0x0b				# version ie type
+    0x02				# ie length
+    0x00 0x02				# protocol version 
+    ;
+
+iax_new = 
+    (0x80..0xff) any			# 1 bit - full frame bit
+					# 15 bits - src call number
+    0x00 0x00 				# 1 bit - retransmission bit
+					# 15 bits - dst call number
+    0x00 0x00 any any			# timestamp (assume < 65536)
+    0x00				# out sequence number
+    0x00				# in sequence num
+    0x06				# frametype - IAX (0x06)
+    0x01				# subclass - NEW (0x01)
+    iax_version_ie
+    ;
+
+iax = iax_new @<MATCH> any*;

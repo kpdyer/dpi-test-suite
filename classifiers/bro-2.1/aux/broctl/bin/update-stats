@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+#
+# Saves the current stats.log from spool to ${statsdir}, and 
+# updates the WWW data. 
+
+. `dirname $0`/broctl-config.sh
+
+dst=${statsdir}/`basename ${statslog}`
+cat ${statslog} >>$dst
+
+cp ${statsdir}/meta.dat ${statsdir}/www
+
+${scriptsdir}/stats-to-csv ${statslog} ${statsdir}/meta.dat ${statsdir}/www
+
+rm -f ${statslog}

@@ -1,0 +1,18 @@
+/* Location of config file */
+#define BRO_SYSCONF_FILE "@BRO_SYSCONF_FILE@"
+
+/* Whether this is a BSD host */
+#cmakedefine BSD_HOST
+
+/* Define if you have the `geteuid' function. */
+#cmakedefine HAVE_GETEUID
+
+/* Define if you have the `getpwuid' function. */
+#cmakedefine HAVE_GETPWUID
+
+/* Whether this is a Linux host */
+#cmakedefine LINUX_HOST
+
+/* Define if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
+#cmakedefine WORDS_BIGENDIAN

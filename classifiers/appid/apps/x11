@@ -1,0 +1,38 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: X11
+AppID: 114
+Port: tcp/6000
+
+##########
+# X11
+
+# The first byte of a client connection request specifies the byte
+# ordering to be used in the rest of the message and all further
+# client-server communication.
+#
+# http://tools.ietf.org/html/1013
+# 
+
+x11_client_request_le = 
+    0x6c			# byte order
+    0x00			# unused
+    0x0b 0x00			# protocol-major-version (11)
+    0x00 0x00			# protocol-minor-version (0)
+    any any			# authorization-protocol-name-length
+    any any			# authorization-protocol-data-length
+    0x00 0x00			# unused
+    ;
+
+x11_client_request_be =
+    0x42			# byte order
+    0x00			# unused
+    0x00 0x0b			# protocol-major-version (11)
+    0x00 0x00			# protocol-minor-version (0)
+    any any			# authorization-protocol-name-length
+    any any			# authorization-protocol-data-length
+    0x00 0x00			# unused
+    ;
+
+x11 = ( x11_client_request_le | x11_client_request_be ) @<MATCH> any*;

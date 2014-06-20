@@ -1,0 +1,14 @@
+For question, comments, and support, please send email to 
+<netsa-help@cert.org>.
+
+Brian Trammell originally created YAF and lead overall design. Chris Inacio
+built the plugin interface and the included plugins, 
+banner grabbing and is the current primary maintainer, and Michael Duggan
+contributed to the development of YAF's packet decoder.
+
+Thanks to the organizers and participants of the IPFIX Interoperability Events 
+sponsored by IPS-MoME in Salzburg, Austria in March 2006 and by Fraunhofer 
+FOKUS in Berlin, Germany in November 2006 for helping to ensure YAF's 
+interoperability with other IPFIX implementations.
+
+Thanks to Tony Cebzanov, Michael Duggan, and Sidney Faber for testing, as well.

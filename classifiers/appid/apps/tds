@@ -1,0 +1,157 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: TDS
+AppID: 108
+Port: tcp/1433
+# Bidirectional
+
+# TDS was developed by Sybase and is used by Sybase and Microsoft SQL.
+# Sybase calls their implementation "netlib".  There are four
+# different version.
+#
+# History of TDS Versions 
+# (From http://www.freetds.org/userguide/tdshistory.htm)
+#   TDS 4.2,4.6 for Sysbase and Microsoft
+#   TDS 5.0 for Sysbase
+#   TDS 7.0 for Microsoft for SQL Server 7.0
+#   TDS 8.0 for Microsoft SQL Server 2000
+#
+# References:
+#   FreeTDS project
+#     http://www.freetds.org/
+#     http://www.freetds.org/tds.html (Some protocol information)
+#     freetds/src/tds/{login.c,write.c}
+#   Official Sysbase TDS 5.0 docs
+#     http://www.sybase.com/detail?id=1013412
+#
+#
+# How to get packet traces using FreeTDS in MoW using the ISS box:
+#
+#   ssh admin@moron
+#   / services ads siteprotector show raw
+#   <ip>|<user>|<password>
+#   (This is a MS-SQL 2000 server)
+#
+#   ssh root@moron
+#   chroot /base bash
+#   TDSVER="4.2" tsql -H <ip> -p 1433 -U <user> -P <password>
+#   ...
+#
+#   MS-SQL 2000 will respond to 4.2, 4.6, 7.0, and 8.0.  It will not
+#   respond to 5.0.  (We need Sybase to get a TDS 5.0 server
+#   response.)
+
+# TDS 4.2, 4.6, 5.0 client login
+# A TDS "packet" can be at most 512 bytes.  The login PDU is more than
+# 512 bytes, so split between two packets.
+tds_45_client_login = 
+  # TDS Header
+  0x02		# Type: Login (0x02)
+  0x00		# Last packet indicator
+  0x02 0x00	# Size: 512 bytes
+  0 0		# Channel
+  0		# Packet number
+  0		# Window
+  # TDS Login
+  # any*
+  # major_version, minor_version at bytes 466 and 468 (uints)
+  # Don't bother matching since it would add 466+ states.
+  ;
+
+
+# TDS 4, 5, or 7 server login response.
+tds_457_server_login_response =
+  # TDS Header
+  0x04		# Type: Response
+  0x01		# Last packet indicator
+  any{2}	# Size
+  any{2}	# Channel (can be non-0)
+  1		# Packet number
+  0		# Window
+  # TDS Packet
+  (0xaa | 	# Type: Error
+   0xab |	# 	Info Message
+   0xad |	# 	Login Acknowledgement
+   0xe3 |	# 	Environment change
+   0xe5 |	# 	Extended error message
+   0xfd)	# 	Done
+  # any{2}	# Length
+  # any*	# Data
+  # Microsoft-SQL will include the string "Microsoft SQL Server"
+  # in version 4.x, and this string using wide chars in version 7.0.
+  ;
+
+
+# TDS 7 client login
+tds_7_client_login = 
+  # TDS Header
+  0x10	 	# Type: Login (0x10)
+  0x01		# Last packet indicator
+  any{2}	# Size
+  0 0		# Channel
+  0		# Packet number
+  0		# Window
+  # TDS Packet
+  any{4}	# Length
+  0 0 0 0x70	# Version
+  # any*	# Username, password, etc
+  ;
+
+
+# TDS 8 client login
+# This is more of a hello message - it doesn't include username or
+# password.  A TDS 7 login follows this message, possibly encrypted.
+tds_8_client_login =
+  # TDS Header
+  0x12	 	# Type: 0x12
+  0x01		# Last packet indicator
+  any{2}	# Size
+  0 0		# Channel
+  0		# Packet number
+  0		# Window
+  # TDS Packet
+  0		# NetLib Version
+  0 21		#   Offset: START_POS
+  0 6		#   Length: 6
+  1		# Encryption
+  0 27		#   Offset: START_POS + 6
+  0 1		#   Length: 1
+  2 		# Instance
+  0 28		#   Offset: START_POS + 6 + 1
+  any{2}	#   Instance name length
+  3		# Process ID
+  any{2}	#   START_POS + 6 + 1 + instance name length
+  0 4		#   Length: 4
+  0xff		# End
+  8 0 1 0x55 0 0 # Netlib Version
+  0		# Encryption
+  # any{N}	# Instance name
+  # any{4}	# Process ID
+  # any*
+  ;
+
+
+# TDS 8 server login response
+tds_8_server_login_response =
+  # TDS Header
+  0x04		# Type: Response
+  0x01		# Last packet indicator
+  any{2}	# Size
+  0 0		# Channel (seems to be 0 with MS-SQL)
+  1		# Packet number
+  0		# Window
+  # TDS Packet
+  0		# NetLib Version
+  any{2}	#   Offset: ?
+  0 6		#   Length: 6
+  # any*
+  ;
+
+
+tds = 
+    (tds_45_client_login | tds_457_server_login_response |
+     tds_7_client_login  | 
+     tds_8_client_login  | tds_8_server_login_response)
+    @<MATCH> any*
+    ;

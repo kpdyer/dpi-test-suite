@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+#
+# Bro postprocessor script to archive log files. 
+# 
+# archive-log <rotated-file-name> <base-name> <timestamp-when-opened> <timestamp-when-closed> <terminating> <writer>
+
+rm -rf $1
+

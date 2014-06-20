@@ -1,0 +1,31 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: BitTorrent
+AppID: 15
+Port: tcp/*
+
+#
+# BitTorrent is a protocol for distributing files
+#
+# http://www.bittorrent.com/protocol.html
+#
+
+peer_connection =
+    0x13
+    "BitTorrent protocol"
+    ;
+
+tracker_connection = 
+    "GET /announce?"  
+    ( "info_hash" |
+      "peer_id" |
+      "ip" |
+      "port" |
+      "uploaded" |
+      "downloaded" |
+      "left" |
+      "event" )
+    "=";
+
+bittorrent = ( peer_connection | tracker_connection ) @<MATCH> any*;

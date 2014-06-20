@@ -1,0 +1,46 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: NTP
+AppID: 64
+Port: udp/123
+# Conflicts with eDonkey
+
+# NTP 2: RFC 958
+#   2 bits	leap year (0 .. 3)
+#   6 bits	status (0 .. 4)
+#   1 byte	type (0 .. 4)
+#   46 bytes	other (any)
+#
+ntp2 = 
+    (0x00 | 0x01 | 0x02 | 0x03 | 0x04 |  # leap year 0
+     0x40 | 0x41 | 0x42 | 0x43 | 0x44 |  # leap year 1
+     0x80 | 0x81 | 0x02 | 0x83 | 0x84 |  # leap year 2
+     0xc0 | 0xc1 | 0xc2 | 0xc3 | 0xc4)   # leap year 3
+    (0 .. 4)			         # status
+    #any{46}			         # other
+    ;
+
+# NTP 3: RFC 1305
+# SNTP 4: RFC 2030, Section 4
+#   2-bits 	leap year (0 .. 3)
+#   3-bits	version (3 or 4 assigned)
+#   3-bit 	mode (1 .. 5 assigned)
+#   1-byte	stratum (0 .. 15 assigned)
+#   46 bytes	other (any)
+#   20 bytes	optional (any)
+ntp4 = 
+    (0x19 | 0x1a | 0x1b | 0x1c | 0x1d | # LY 0, Version 3
+     0x21 | 0x22 | 0x23 | 0x24 | 0x25 | # LY 0, Version 4
+     0x59 | 0x5a | 0x5b | 0x5c | 0x5d | # LY 1, Version 3
+     0x61 | 0x62 | 0x63 | 0x64 | 0x65 | # LY 1, Version 4
+     0x99 | 0x9a | 0x9b | 0x9c | 0x9d | # LY 2, Version 3
+     0xa1 | 0xa2 | 0xa3 | 0xa4 | 0xa5 | # LY 2, Version 3
+     0xd9 | 0xda | 0xdb | 0xdc | 0xdd | # LY 3, Version 3
+     0xe1 | 0xe2 | 0xe3 | 0xe4 | 0xe5)  # LY 3, Version 3
+    (0 .. 15)			        # stratum
+    #any{46}				# other
+    #(any{20})?				# optional
+    ;
+
+ntp = ntp2 | ntp4 @<MATCH> any*;

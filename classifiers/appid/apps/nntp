@@ -1,0 +1,16 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: NNTP
+AppID: 63
+Port: tcp/119
+
+# NNTP
+# http://www.ietf.org/rfc/rfc0977.txt
+
+#
+# Response codes:
+# 200 server ready - posting allowed
+# 201 server ready - no posting allowed
+#
+nntp = ("200" | "201") space+ [^\r\n]* [\r\n]+ @<MATCH> any*;

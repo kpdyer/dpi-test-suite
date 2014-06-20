@@ -1,0 +1,50 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: NetBIOS_NS
+AppID: 59
+Port: udp/137
+Machine: any4
+
+# RFC 1001, Sections 14 and 15
+# RFC 1002, Section 4.2 (Packet format)
+#
+# NetBIOS is DNS but:
+#   Type is always NB (0x00 0x20)
+#   Class is always IN (0x00 0x01)
+#   Additional opcodes
+#   Reserved bit becomes a broadcast flag
+#   Query record always starts with 32 bytes of A..P
+#
+# In order to avoid conflicts with DNS, we do not match on the
+# NB type in our DNS signature.
+#
+# Header format:
+#   2 bytes	ID (any)
+#   1 bit	Response flag (0 or 1)
+#   4 bit 	Opcode (0, 5 .. 8 assigned)
+#   1 bit	AA flag (0 in request, 0 or 1 in response)
+#   1 bit       TC flag
+#   1 bit	RD flag
+#   1 bit	RA flag (0 in request, 0 or 1 in response)
+#   2 bit	Reserved (0)
+#   1 bit	Broadcast flag
+#   4 bit	Response code (0 .. 7 assigned)
+#
+# Note: NetBIOS queries (opcode = 0) currently overlap with DNS.
+# Usually the broadcast flag is set, so this won't matter.
+
+netbios_ns =
+    any{2}		               # ID
+    ((0x00 | 0x01 | (0x28 .. 0x41)) |  # R 0, Opcode, AA,TC,RD
+     (0x80 | 0x81 | 0x85 | (0xa8 .. 0xc1)))   # R 1
+    ((0x00 .. 0x07) |		       # RA 0, B 0
+     (0x10 .. 0x17) |		       # RA 0, B 1
+     (0x80 .. 0x87) |		       # RA 1, B 0
+     (0x90 .. 0x97))		       # RA 1, B 1
+    (0 (0 | 1)){4}	               # 4 count fields
+    any* :> 0x00		       # Name (terminated with 0x00)
+    0x00 (0x20 | 0x21)		       # Type (NB)
+    0x00 0x01			       # Class (IN)
+    @<MATCH> any*
+    ; 

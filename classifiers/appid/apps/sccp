@@ -1,0 +1,22 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SCCP
+AppID: 92
+Port: tcp/2000
+Machine: any
+
+##########
+# SCCP
+
+# Skinny Client Control Protocol
+# 
+# See ethereal/epan/dissectors/packet-skinny.c for details
+
+sccp_register =
+    any 0x00 0x00 0x00			# packet length (assume < 256)
+    0x00 0x00 0x00 0x00			# reserved
+    ( 0x01 | 0x81 ) 0x00 0x00 0x00	# type (register, registerack)
+    ;
+
+sccp = sccp_register @<MATCH> any*;

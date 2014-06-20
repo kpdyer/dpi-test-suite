@@ -1,0 +1,20 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Citrix
+AppID: 16
+Port: tcp/1494 udp/1494 tcp/1604 udp/1604
+
+##########
+# Citrix
+
+# Citrix ICA Protocol
+#
+# Taken from dsniff.magic
+
+citrix_dsniff =
+    0x7f 0x7f 0x49 0x43
+    0x41 0x00
+    ;
+
+citrix = citrix_dsniff @<MATCH> any*;

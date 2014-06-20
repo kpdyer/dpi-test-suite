@@ -1,0 +1,55 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: OpenNAP
+AppID: 66
+Port: tcp/3456 tcp/6699 tcp/7777 tcp/8888
+Machine: any
+
+##########
+# OpenNAP
+
+# OpenNAP P2P Protocol
+#
+# http://opennap.sourceforge.net/napster.txt
+
+opennap_email_part = /[0-9A-Za-z\-\.\_]/;
+opennap_email = opennap_email_part+ "@" opennap_email_part+;
+
+# Login Format: <nick> <password> <port> "<client-info>" <link-type> 
+opennap_login =
+    any 0x00			# message length (assume < 256)
+    0x02 0x00			# login message type
+    graph+ " " graph+ " " digit{1,5} " " "\"" print+ "\"" " " digit{1,2}
+    ;
+
+# Login Ack Format: <email> 
+opennap_login_ack =
+    any 0x00			# message length (assume < 256)
+    0x03 0x00			# login ack message type
+    opennap_email
+    ;
+
+# New User Login Format: <nick> <pass> <port> "<client-info>" <link-type> <email-address>
+opennap_new_user_login =
+    any 0x00			# message length (assume < 256)
+    0x06 0x00			# new user login message type
+    graph+ " " graph+ " " digit{1,5} " " "\"" print+ "\"" " " digit{1,2} " " opennap_email
+    ;
+
+# File Transfer Format: GET|SEND<mynick> "<filename>" <offset>
+opennap_file_transfer = 
+    ( "GET"i | "SEND"i ) graph+ " " "\"" print+ "\"" " " digit+
+    ;
+
+# File Browsing
+opennap_file_browsing =
+    ( "GETLIST"i | ( "SENDLIST "i graph+ "\n" ) )
+    ;
+
+opennap = ( opennap_login |
+            opennap_login_ack |
+	    opennap_new_user_login |
+	    opennap_file_transfer |
+	    opennap_file_browsing )
+	    @<MATCH> any*;

@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+#
+# exists <path>
+
+if [ -e $1 ]; then
+   echo 0
+else
+   echo 1
+fi   
+
+echo ~~~

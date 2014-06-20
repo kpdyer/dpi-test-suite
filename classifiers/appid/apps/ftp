@@ -1,0 +1,12 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: FTP
+AppID: 29
+Port: tcp/21
+
+# FTP
+# http://www.ietf.org/rfc/rfc0959.txt
+
+# XXX - Code "220" conflicts w/SMTP, will be resolved by port matching
+ftp = "220" [^\r\n]* [\r\n]+ @<MATCH> any*;

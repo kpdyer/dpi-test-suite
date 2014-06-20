@@ -1,0 +1,34 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: OpenFT
+AppID: 65
+Port: tcp/1216
+
+##########
+# OpenFT
+
+# http://gift.sourceforge.net/
+#
+# OpenFT is an open P2P protocol using similar techniques as
+# FastTrack.
+# 
+# This signature recognizes peer handshakes from 0.2.x.x clients.
+
+openft_peer_handshake =
+    0x00 0x00 0x00 0x00			# unused
+    0x00 0x08				# length of handshake message
+    0x00 0x01				# handshake command
+    0x00 0x00				# major version (0)
+    0x00 0x02				# minor version (2)
+    0x00 any				# micro version
+    0x00 any				# revision
+    ;
+
+openft_filetransfer = 
+    "GET " [^ ]+ " HTTP/1.0\r\n"	# file transfer request
+    (((any - [\r])+ "\r\n")*) :>>	# additional headers
+    "Range: bytes="i			# range of byes to receive
+    ;
+
+openft = ( openft_peer_handshake | openft_filetransfer ) @<MATCH> any*;

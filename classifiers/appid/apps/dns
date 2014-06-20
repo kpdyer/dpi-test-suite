@@ -1,0 +1,215 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: DNS
+AppID: 25
+Port: udp/53 udp/5353
+#            mdns
+Machine: dns
+
+# STD 13 or RFC 1035 (section 4.1)
+# RFC 2671: Extension Mechanisms for DNS
+# See also: 
+#   http://www.zytrax.com/books/dns/ch15/
+#   Bind's bind/lib/dns/name.c:dns_name_fromwire()
+#          bind/lib/dns/message.c:dns_message_parse()
+#
+# Assigned numbers:
+#   DNS Header Flags, http://www.iana.org/assignments/dns-header-flags
+#   DNS Parameters, http://www.iana.org/assignments/dns-parameters
+#
+# From DNS Parameters:
+#   "Note: In RFC 1002, two types are defined.  It is not clear that these
+#    are in use, though if so their assignment does conflict with those
+#    above.
+#
+#      NB       32      NetBIOS general Name Service
+#      NBSTAT   33      NetBIOS NODE STATUS"
+#   
+#   Since we use type NB (32) in our NetBIOS_NS signature, we must
+#   avoid this conflict and not match type NB for DNS.
+#
+# Header:
+#   2 bytes	ID (any)
+#   1 bit	QR (0 or 1)
+#   4 bit 	Opcode (0 .. 2 assigned)
+#   3 bit 	AA, TC, RD flags (each 0 or 1)
+#   1 bit 	RA (0 or 1)
+#   1 bit	Reserved (0)
+#   2 bit	AD, CD bits (RFC 2535, section 6.1)
+#   4 bit	RCODE (0..10 assigned)
+#   2 byte ea	QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT
+#
+# Question Section: (Section 4.1.2)
+#   Name+
+#   Type
+#   Class
+#
+# Resource Record Format: (Section 4.1.3)
+#   Name
+#   Type
+#   Class
+#   any{4}		# TTL
+#   any{4}		# RData Length
+#   any{RData Length}	# RData
+#				
+# Name:
+#   Label+ 0
+#   Pointer
+#   Label+ Pointer
+#
+# Label:
+#   0x01..0x3f		# Length (1..63)
+#   any{Length}		# Name
+#
+# Pointer:
+#   ((0xc0..0xff) any)  # Compressed label: &0x3FFF is offset from
+#			#   start of packet to rest of name
+# Type:
+#   any{2}		# 1..48, 100..103, 249..255, 32768..32769 assigned
+#
+# Class:
+#   any{2}		# 1, 3, 4, 254, 255 assigned
+#
+# Byte 3 matches 5 out of 8 bytes
+# Byte 4 matches 10 out of 32 bytes
+
+dns_consume_length :=
+    any*
+	${
+		fsm->len--;
+		if (fsm->len == 0)
+			fret;
+	 }
+	;
+
+dns_label =
+    (0x01..0x3f)		# Length
+	@{ 
+		fsm->len = fc; 
+		fcall dns_consume_length; 
+	 };
+dns_pointer = ((0xc0..0xff) any);
+dns_name = dns_label* (0 | dns_pointer);
+# DNS Extensions allow extended label types 0x40..0x4f, but none
+# have been assigned by the IANA.  RFC 2671, 3.1
+
+dns_type = # does not include OPT (41) or NB (32)
+    ((0 (1..31 | 33..40 | 42..48 | 100..103 | 249..255)) |
+    (0x80 (0x00 | 0x01)));
+dns_class = (0 (1 | 3 | 4 | 254 | 255));
+
+
+##########
+# Q
+
+dns_q =
+    dns_name
+    dns_type
+    dns_class
+    ;
+
+dns_consume_q :=
+    dns_q @<MATCH> @{ fret; }
+    ;
+
+##########
+# RR
+
+# Regular RR, RFC 1035, 4.1.3
+dns_rr_nonopt = 
+    dns_name
+    dns_type
+    dns_class
+    #any{4}		# TTL
+    #any{2}		# RDLENGTH
+    #any*		# RDDATA
+    ;
+
+# OPT pseudo-RR, RFC 2671, 4.1
+dns_rr_opt =
+    0 			# Name: Root
+    (0 41)		# Type: OPT (41)
+    #any{2}		# "Class": Senders UDP payload size
+    #any{4}		# "TTL": Extended RCODE and flags
+    #any{2}		# "RDLENGTH": Describes RDATA
+    #any{2}		# Option code (cannot find assignments)
+    #any{2}		# Option length
+    #any*		# Option
+    ;
+
+dns_rr = dns_rr_nonopt | dns_rr_opt ;
+
+dns_consume_rr :=
+    dns_rr @<MATCH> @{ fret; }
+    ;
+
+##########
+
+dns =
+    #any{2}?            # XXX - DNS over TCP needs this, but it won't
+                        # work currently because you can't use '?' (which
+                        # creates a new branch) before an fcall (which modifies
+                        # the state) -- see dhelder@ for more detail :)
+
+    any{2}		# ID
+    ((0x00 .. 0x17) |   # QR 0, Opcode 0-2, AA,TC,RD=*
+     (0x20 .. 0x2f) |   # QR 0, Opcode 4,5, AA,TC,RD=*
+     (0x80 .. 0x97) |   # QR 1, Opcode 0-2, AA,TC,RD=*
+     (0xa0 .. 0xaf))    # QR 1, Opcode 4,5, AA,TC,RD=*
+    ((0x00 .. 0x0a) |   # RA 0, AD 0, CD 0, Rcode 0-10
+     (0x10 .. 0x1a) |   # RA 0, AD 0, CD 1
+     (0x20 .. 0x2a) |   # RA 0, AD 1, CD 0
+     (0x30 .. 0x3a) |   # RA 0, AD 1, CD 1
+     (0x80 .. 0x8a) |   # RA 1, AD 0, CD 0
+     (0x90 .. 0x9a) |   # RA 1, AD 0, CD 1
+     (0xa0 .. 0xaa) |   # RA 1, AD 1, CD 0
+     (0xb0 .. 0xba))    # RA 1, AD 1, CD 1
+    #
+    # Next four fields are:
+    #   QDCOUNT	    Question count
+    #   ANCOUNT	    Answer RR count
+    #   NSCOUNT	    Authority RR count
+    #   ARCOUNT	    Additional RR count
+    #
+    # Match on no questions or RRs or at least one question or
+    # RR.  Specifically, parse the name, type, and class.  Type
+    # and class are highly selective compared to the header.
+    #
+    # A full parse is possible, but much more complex.  If
+    # the truncation flag is set, a full parse my not succeed
+    # anyway.
+    (
+     # QDCOUNT=0, RRCOUNTs=0, no trailing garbage.
+     # Otherwise we'd match all-zero packets
+     # (e.g. NTP-v4-OpenBSD-stratum-0.pcap).  Note that Bind
+     # would allow this.
+     #
+     # Note the "</" action - this is "any action going to the EOF
+     # state".  This assumes that the payload length is all that we're
+     # seeing of this stream.  Probably a reasonable assumption, given
+     # how short it is.
+     #
+     # This is really a corner case: if we spoonfeed appid_process payloads
+     # 1 byte at a time (even if the caller will be sending more payload),
+     # then this will match any payload such as "any any 0{8}"
+     # If we reject payloads fed 1 byte at a time, we can't detect the empty
+     # DNS case, where the total payload is "any any 0{8}" when the payload
+     # is sent 1 byte at a time.
+     #
+     # So, for the time being, I've put a custom match condition here which
+     # rejects the 1 byte at a time payload, which really means this never matches
+     # in the 1 byte at a time case.  It will, however, match when the payload
+     # length is 10 bytes (ie hopefully the 'normal' UDP/DNS empty query case).
+     #
+     (0{8}) </ { if (!a->more_payload_coming) { <MATCH> } } |
+     #
+     # QDCOUNT=1+, followed by a question
+    ((any{2} - (0 0)) any{6} @{ fcall dns_consume_q; }
+      any*) |
+     #
+     # QDCOUNT=0, RRCOUNTs=1+, followed by RR
+     ((0 0) (any{6} - 0{6})  @{fcall dns_consume_rr; }
+      any*)
+    )
+    ;

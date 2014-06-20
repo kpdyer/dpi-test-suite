@@ -1,0 +1,20 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: TeamSpeak
+AppID: 109
+Port: udp/8766 tcp/8765
+
+##########
+# TeamSpeak
+
+# TeamSpeak
+#
+# l7-filters/teamspeak
+# http://goteamspeak.com
+#
+# While the TeamSpeak protocol is closed/proprietary, l7 has verified
+# that the connection begins with 0xf4 0xbe 0x03 and the sample dumps
+# collected agree with that. 
+
+teamspeak = 0xf4 0xbe 0x03 @<MATCH> any*;

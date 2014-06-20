@@ -1,0 +1,24 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: ICY
+AppID: 38
+Port: tcp/*
+
+#
+# ICY is a derivative of HTTP
+#
+# Sometimes known as SHOUTcast
+# http://forums.radiotoolbox.com/viewtopic.php?t=74
+#
+
+icy_server_response = 
+  "ICY"i " "		# Version
+  digit{3} " "  	# Status code
+  [^\r\n]+ [\r\n]+	# Reason phrase
+  ;
+
+icy = 
+    icy_server_response
+    @<MATCH> any*
+    ;

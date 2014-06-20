@@ -1,0 +1,51 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: LPD
+AppID: 49
+Port: tcp/515
+# Conflicts with DHCP
+
+# RFC 1179, Sections 5 and 6
+
+lpd_space = " \t\v\f"+ ;     # space, tab, vertical tab, form-feed
+lpd_word = (any - [\0\n])+;  # RFC says ASCII, but be less strict
+
+lpd_receive_job_subcommand = 
+  (0x01 "\n") |			    # Abort
+  (0x02				    # Receive control file
+    digit+ lpd_space		    #   data length
+    "cfA" digit{3} lpd_word "\n") | #   file name
+   #any*			    #   data (see Section 6)
+  (0x03 			    # Receive data file
+    digit+ lpd_space		    #   data length
+    "dfA" digit{3} lpd_word "\n")   #   file name
+   #any*			    #   data (arbitrary)
+  ;
+
+
+# All client requests.
+# Requests are in the form:
+#   code	1 byte
+#   queue name	ASCII
+#   ...
+#   line-feed
+lpd_request = 
+  (0x01 lpd_word "\n") |	    # Print any waiting jobs
+  (0x02 lpd_word "\n"  	            # Receive a printer job
+    lpd_receive_job_subcommand) |
+  (0x03 lpd_word           	    # Send queue state (short)
+    (lpd_space lpd_word)? "\n") |   #   user names, job numbers
+  (0x04 lpd_word	    	    # Send queue state (long)
+    (lpd_space lpd_word)? "\n") |   #   user names, job numbers
+  (0x05 lpd_word lpd_space	    # Remove jobs
+    lpd_word lpd_space		    #   agent
+    lpd_word "\n")		    #   name
+  ; 
+
+
+lpd = 
+  lpd_request
+  @<MATCH> any*;
+
+# Server responses are often just one-byte - too short to match on

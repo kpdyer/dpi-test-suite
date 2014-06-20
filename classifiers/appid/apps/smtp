@@ -1,0 +1,21 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SMTP
+AppID: 97
+Port: tcp/25
+
+# http://www.ietf.org/rfc/rfc2821.txt (replaces RFC 821)
+
+# XXX - Code "220" conflicts w/FTP, will be resolved by port matching
+smtp_server_ready =
+    ("220") |			# 220 ("Service ready")
+    ("554")			# 554 ("Trans. failed")
+    [^\r\n]* [\r\n]+;		# Anything followed by CRLF
+
+smtp_client_helo =
+    (/HELO/i |			# Must be issued before any mail transaction
+     /EHLO/i)
+    [^\r\n]* [\r\n]+;		# Anything followed by newline
+
+smtp = (smtp_server_ready | smtp_client_helo) @<MATCH> any*;

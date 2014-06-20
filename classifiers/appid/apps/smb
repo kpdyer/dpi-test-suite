@@ -1,0 +1,51 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SMB
+AppID: 96
+Port: udp/138 tcp/139 tcp/445
+# Port 138: NetBiOS Datagram Service
+# Port 139: NetBiOS Session Service
+# Port 445: Microsoft-DS
+
+# NetBIOS Session Service: Request (RFC 1002, Section 4.3)
+netbios_ss_req =
+    0x81	       # Type: Session Request (0x81)
+    (0x00 | 0xf0)      # Flags (7 is E, 0-6 reserved)
+    any{2}	       # Length
+    (any - 0)+ 0       # Called name
+    (any - 0)+ 0       # Calling name
+    ;
+
+# NetBIOS Session Service: Message (RFC 1002, Section 4.3)
+netbios_ss_msg_hdr =
+    0x00	       # Type: Session Message (0x00)
+    (0x00 | 0x01)      # Flags (7 is E, 0-6 reserved)
+    any{2}	       # Length
+    ;
+
+# NetBIOS Datagram Service: Data (RFC 1002, Section 4.4)
+# Used for host and domain announcements
+netbios_ds_msg_hdr =
+    (0x10 .. 0x12)     # Type: Direct Unique or Group, or Broadcast
+    (0x00 .. 0x0f)     # Flags (4-7 assigned, 0-3 reserved)
+    any{2}	       # DGM ID
+    any{4}	       # Source IP
+    any{2}	       # Source Port
+    any{2}	       # Length
+    any{2}	       # Packet offset
+    32 [A-P]{32} 0     # Source name
+    32 [A-P]{32} 0     # Destination name
+    ;
+
+# ftp://ftp.microsoft.com/developr/drg/CIFS/SMB.TXT
+# http://ubiqx.org/cifs/SMB.html#SMB.5http://ubiqx.org/cif
+smb =
+    ((netbios_ss_req?       # NetBIOS Session Service: Request (optional)
+      netbios_ss_msg_hdr) | # NetBIOS Session Service: Message
+      netbios_ds_msg_hdr)   # NetBIOS Datagram Service: Data
+    0xff "SMB"	       # ID
+    (0x25 | 0x72)      # Command: Trans (0x25) or Negotiate protocol (0x72)
+    0 0 0 0	       # Status: Success
+    @<MATCH> any*
+    ;

@@ -1,0 +1,47 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: MSN
+AppID: 55
+Port: tcp/1863
+
+# http://www.hypothetic.org/docs/msn/index.php
+# http://msnpiki.msnfanatic.com/index.php/Main_Page
+# http://projects.collabora.co.uk/trac/farsight/wiki/MsnWebcam
+
+msn_notification_cnxn =
+    "VER "			# VER command
+    digit+			# Transaction ID
+    ( " " alnum+ )*		# Any number of protocol versions
+    ( " MSNP" digit+ )		# Must have at least one MSN protocol listed
+    ( " " alnum+ )*		# Any number of protocol versions
+    0xd 0xa;			# \r\n
+
+msn_switchboard_cnxn =
+    ( "USR " | "ANS " )		# USR (request) or ANS (answer) command
+    digit+			# Transaction ID
+    " "				# Space
+    [^ \r\n]+			# Account name
+    " "				# Space
+    [^ \r\n]+			# Authentication string
+    ( " " [^ \r\n]+ )?		# Switchboard session ID (for "answer" only)
+    0xd 0xa;			# \r\n
+
+#
+# There's a relatively complicated negotiation sequence for MSN webcam feeds,
+# but the actual connection is easy to identify.  Rather than following this
+# sequence within the MSN decoder, just do the easy match here.
+#
+# According to the Farsight Wiki (see URL above), the video feed is encoded
+# with a codec called "mimic".  As far as I can tell, the match we're doing
+# here is MSN-specific and not part of any broader protocol.
+#
+# XXX - I use alnum+ here to be safe, but digit+ might suffice.
+#
+msn_webcam =
+    "recipientid="i alnum+	# Recipient ID
+    "&sessionid="i alnum+	# Session ID
+    0xd 0xa 0xd 0xa;		# \r\n\r\n
+
+msn =
+    ( msn_notification_cnxn | msn_switchboard_cnxn | msn_webcam ) @<MATCH> any*;

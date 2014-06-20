@@ -1,0 +1,283 @@
+=pod
+
+=head1 NAME
+
+B<yaf> B<application> B<labeling>
+
+=head1 DESCRIPTION
+
+B<yaf> can examine packet payloads and determine the application protocol in use within a flow, and export a 16-bit application label with each flow if B<yaf> is built with application labeler support (using the B<--enable-applabel> option to ./configure when yaf is built).
+
+The exported application label uses the common port number for the protocol.  For example, HTTP Traffic, independent of what port the traffic is detected on, will be labeled with a value of 80, the default HTTP port.  Labels and rules are taken from a configuration file read by B<yaf> at startup time.  This rule file can be given on the command line with the B<--applabel-rules> option or will try to be read from the default location of F</Users/coulls/Documents/Research/Traffic_Analysis/code/trunk/test-suite/classifiers/opt/etc/yafApplabelRules.conf>.  If B<yaf> was installed in a nonstandard location, it may be necessary to set the LTDL_LIBRARY_PATH environment variable to the location of the application label plugins.  By default, B<yaf> installs
+the application labeling plugins in /usr/local/lib/yaf.
+
+Application labeling requires payload capture to be enabled with the B<--max-payload> option.  A minimum payload capture length of 384 bytes is recommended for best results.
+
+Application labeling is presently experimental, and not guaranteed to be 100% accurate.  However, application labels are supported in B<yafscii> and SiLK via B<rwflowpack>, B<flowcap>, and B<rwipfix2silk>.
+
+=head1 CONFIG FILE FORMAT
+
+The yafApplabelRules.conf file is the main source of information by which B<yaf> determines application labels, and is required for application labeling support.  By default, this file is located in F</Users/coulls/Documents/Research/Traffic_Analysis/code/trunk/test-suite/classifiers/opt/etc/yafApplabelRules.conf>.
+
+The file is a list of label statements.  A label statement begins with the keyword 'label', and has the following form:
+
+=over 1
+
+label <N> <label-rule>
+
+=back
+
+where <N> is the application label to apply (an unsigned 16-bit decimal integer in the range 0 to 65535), and <label-rule> specifies how to recognize the given application protocol.  There are three types of label rules supported: regex, plugin, and signature.
+
+A '#' symbol starts a comment in the rule file, and the rest of the line is a comment.
+
+=head2 Rule Types
+
+=over 3
+
+=item B<Regular Expression Rules>
+
+=over 1
+
+Regular Expression rules have the following form:
+
+=over 1
+
+label <N> regex <expression>
+
+=back
+
+The regular expression is compared against the available payload of the flow, and is a PCRE regular expression (see PCRE documentation for details).  The expression is undelimited, and continues until the end of the line. <N> should be the well-known port of the protocol you are trying to detect with the <expression>.  The regular expression is stored along with the application label <N> and will be compared first against the forward payload with source or destination port matching <N>.  For example, if a flow has a destination port of 80, it will first be matched against the regular expression associated with application label 80.  If a match does not occur, it starts at the beginning of the configuration file and proceeds down the list until it either finds a match or all options have been tried.  If no match has occurred, it will repeat the previous steps with the reverse payload.  For this reason, <N> should be the well-known port of the protocol.  If the expression matches, the label <N> is applied to the flow.
+
+=back
+
+=item B<Plugin Rules>
+
+=over 1
+
+Plugin rules are used to label application payload using a dynamically loaded library, written in C, and have the following form:
+
+=over 1
+
+label <N> plugin <library> <function name> <arg-list>
+
+=back
+
+where <library> is the name of the dynamically loadable library that exists somewhere within the LD_LIBRARY_PATH, the LTDL_LIBRARY_PATH, or a system library path, without the library extension name (usually .so); <function> is the name of the function to call within the library; and the optional <arg-list> is a space-separated list of arguments that will be passed as the argc and argv parameters to that function.  See the source code to the plugins included with B<yaf> for details on the specific protocol implementations.  Similar to regular expression rules, <N> should be the well-known port of the application you are trying to detect because the plugin is first executed on flows which have a  source or destination port matching <N>.  The label <N> is applied to a flow if the flow passes all the requirements specified in the plugin.
+
+=back
+
+=item B<Signature Rules>
+
+=over 1
+
+Signatures are the newest addition to the application labeling feature in B<yaf>.  Regular expression rules that only search for some expression, regardless of port, have the following form:
+
+=over 1
+
+label <N> signature <expression>
+
+=back
+
+The <expression> is compared against the available payload of the flow.  All signature regular expressions are compared before port-based matching begins.  The <expression> should be a PCRE Regular expression.  The expression is undelimited, and continues until the end of the line.  If the expression matches, the label <N> is applied to the flow, and port-based matching will not execute.  For example, if you want to label flows that have the phrase "foo bar" with application label 9876, you would add the following to the yafApplabelRules.conf file:
+
+=over 1
+
+label 9876 signature foo bar
+
+=back
+
+=back
+
+=back
+
+=head1 MISCELLANEOUS
+
+Regardless of rule type, each rule should have a unique application label.  Note that once a match is found, application labeling will not continue to find a "better" match.  Therefore, the order of the rules in the configuration file can make a difference.  More common protocols should be listed at the beginning of the configuration file to increase efficiency.  Regular expressions specifically crafted for reverse payloads are not recommended; unless there is no chance that they will match another protocol in the list.  This issue may be addressed in a later release.  Be aware that poorly crafted regular expressions can be detrimental to the efficiency of the software.
+
+Since signature rule labels are usually not a well-known port, they will be compared against the payload in the same order as they appear in the configuration file.
+
+If yaf is seeing traffic behind a web proxy, it may incorrectly label https (443) traffic as http (80) due to the HTTP Connect method that occurs before the Certificate exchange.  To accurately label https traffic, uncomment the following line in the yafApplabelRules.conf file:
+
+label <N> plugin proxyplugin proxyplugin_LTX_ycProxyScanScan
+
+and set <N> to the port on which the proxy is listening for connections.  This will not label https flows as as <N>.  It will set the application label to 443 and will allow the DPI plugin to capture and export X.509 Certificates.
+
+=head1 LABELS
+
+=begin html
+
+<p>The following application labels are included in the YAF 2.x config file:</p>
+
+<table border="1" cellpadding="5">
+<tr>
+<td> Application Protocol</td>
+<td> Application Label </td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>80</td>
+</tr>
+<tr>
+<td>SSH</td>
+<td>22</td>
+</tr>
+<tr>
+<td>SMTP</td>
+<td>25</td>
+</tr>
+<tr>
+<td>Gnutella</td>
+<td>6346</td>
+</tr>
+<tr>
+<td>Yahoo Messenger</td>
+<td>5050</td>
+</tr>
+<tr>
+<td>DNS</td>
+<td>53</td>
+</tr>
+<tr>
+<td>NETBIOS*</td>
+<td>137</td>
+</tr>
+<tr>
+<td>FTP</td>
+<td>21</td>
+</tr>
+<tr>
+<td>SSL/TLS</td>
+<td>443</td>
+</tr>
+<tr>
+<td>SLP</td>
+<td>427</td>
+</tr>
+<tr>
+<td>IMAP</td>
+<td>143</td>
+</tr>
+<tr>
+<td>IRC</td>
+<td>194</td>
+</tr>
+<tr>
+<td>RTSP</td>
+<td>554</td>
+</tr>
+<tr>
+<td>SIP</td>
+<td>5060</td>
+</tr>
+<tr>
+<td>RSYNC</td>
+<td>873</td>
+</tr>
+<tr>
+<td>PPTP</td>
+<td>1723</td>
+</tr>
+<tr>
+<td>NNTP</td>
+<td>119</td>
+</tr>
+<tr>
+<td>TFTP</td>
+<td>69</td>
+</tr>
+<tr>
+<td>Teredo</td>
+<td>3544</td>
+</tr>
+<tr>
+<td>MySQL</td>
+<td>3306</td>
+</tr>
+<tr>
+<td>POP3</td>
+<td>110</td>
+</tr>
+<tr>
+<td>SNMP</td>
+<td>161</td>
+</tr>
+<tr>
+<td>SMB</td>
+<td>139</td>
+</tr>
+<tr>
+<td>AIM</td>
+<td>5190</td>
+</tr>
+<tr>
+<td>SOCKS</td>
+<td>1080</td>
+</tr>
+<tr>
+<td>BGP</td>
+<td>179</td>
+</tr>
+<tr>
+<td>DHCP</td>
+<td>67</td>
+</tr>
+<tr>
+<td>VNC</td>
+<td>5900</td>
+</tr>
+<td>Jabber</td>
+<td>5222</td>
+</tr>
+<tr>
+<td>MSNP</td>
+<td>1863</td>
+</tr>
+<tr>
+<td>RTP</td>
+<td>5004</td>
+</tr>
+<tr>
+<td>RTCP**</td>
+<td>5005</td>
+</tr>
+<tr>
+<td>MSOffice Update</td>
+<td>2223</td>
+</tr>
+<tr>
+<td>MGCP</td>
+<td>2427</td>
+</tr>
+<tr>
+<td>MEGACO</td>
+<td>2944</td>
+</tr>
+<tr>
+<td>Poison Ivy</td>
+<td>65534</td>
+</tr>
+<tr>
+<td>Palevo</td>
+<td>65533</td>
+</tr>
+</table>
+
+=end html
+
+*NETBIOS is not included in the configuration file.  It is contained in the
+DNS decoder due to its similarites with the DNS Protocol.
+
+**RTCP is not included in the configuration file.  It is contained in the
+RTP decoder due to similarities in the protocols.
+
+=head1 AUTHORS
+
+CERT Network Situational Awareness Group Engineering Team,
+http://www.cert.org/netsa
+
+=head1 SEE ALSO
+
+L<yaf(1)>, L<yafscii(1)>
+
+=cut

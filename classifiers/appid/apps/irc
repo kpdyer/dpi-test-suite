@@ -1,0 +1,25 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: IRC
+AppID: 43
+Port: tcp/6667
+
+# IRC
+# http://www.ietf.org/rfc/rfc1459.txt
+
+# XXX - Is it necessary to handle mixed case like this?  It seems to be
+# supported by ircd (at least, the one running on detroit).
+#
+# XXX - The RFC says the 4th parameter to the USER command should be prefixed
+# with a colon (`:'), but again, ircd doesn't seem to enforce it.
+
+nick =
+    /NICK/i
+    " "+ [^ \r\n]+ ( " "+ digit+ )? " "* [\r\n]+;
+
+user =
+    /USER/i
+    " "+ [^ \r\n]+ " "+ [^ \r\n]+ " "+ [^ \r\n]+ " "+ any+ [\r\n]+;
+
+irc = ( user nick | nick user ) @<MATCH> any*;

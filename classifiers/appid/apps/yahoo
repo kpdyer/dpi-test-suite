@@ -1,0 +1,26 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Yahoo
+AppID: 118
+Port: tcp/5050
+
+##########
+# Yahoo
+
+# Yahoo Messenger Protocol
+# http://libyahoo2.sourceforge.net/ymsg-9.txt
+# http://www.venkydude.com/articles/yahoo.htm
+
+yahoo_messenger =
+    ( "YMSG"i |			# Standard header for all commands and messages
+      "YPNS"i | "YHOO"i )	# Headers used by Ethereal
+    				#    (http://ethereal.com/faq.html#q5.32)
+    0 0..12 0 0			# 4 bytes of version, last two can safely be 0 0
+    				#    Version currently goes up to 12 (0x0c)
+    				#    Server messages have version == 0
+    any any			# Length of message (total length - header[20 bytes])
+    0x00
+    ;
+
+yahoo = yahoo_messenger @<MATCH> any*;

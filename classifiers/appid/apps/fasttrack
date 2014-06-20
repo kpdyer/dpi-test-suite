@@ -1,0 +1,114 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: FastTrack
+AppID: 28
+Port: udp/* tcp/*
+
+#
+# FastTrack (aka KaZaA) is a closed P2P file sharing protocol.  Popular
+# clients include:
+#
+#	KaZaA 		http://www.kazaa.com/
+#	iMesh		http://www.imesh.com/
+#	giFT-fasttrack	http://gift-fasttrack.berlios.de/
+#
+# Protocol docs:
+# http://gnunet.org/papers/FAST-TRACK-PROTOCOL
+#
+
+#
+# XXX - FastTrack TCP control connections are not yet identified - XXX
+#
+# The initial handshake packets look like this:
+#
+# Initial handshake [->]
+#
+# Bytes	Desc
+# 4	unknown ("rand")
+# 4	outgoing cipher seed
+# 4	outgoing encryption type (encoded)
+#
+# Handshake response [<-]
+#
+# Bytes	Desc
+# 4	incoming cipher seed
+# 4	incoming encryption type (encoded)
+#
+# "All communication from this point forth is encrypted."
+#
+# Since the rest of the stream will be encrypted, we can't do any matching
+# beyond the initial handshake.
+#
+# There's bad news, good news, and more bad news.  The bad news is that the
+# KaZaA encryption algorithms are proprietary, undocumented, and the legal
+# property of Sharman Networks.  The good news is that implementations of
+# these algorithms have been published by open source hackers after they were
+# able to reverse-engineer the Linux version of the KaZaA Media Desktop client
+# that Sharman released a few years ago (but no longer maintain).  The other
+# bad news is that they were bending the law when they decided to release their
+# code, because the software license that comes with the KaZaA software
+# explicitly prohibits reverse-engineering and disassembly of any kind.
+#
+# Excerpt from the LICENSE file:
+#
+# "Except as expressly permitted in this License, you agree not to
+# reverse engineer, de-compile, disassemble, alter, duplicate, modify,  
+# rent, lease, loan, sublicense, make copies, create derivative works
+# from, distribute or provide others with the KaZaA software in whole or
+# part or transmit the application over a network."
+#
+# We could identify the control streams with the following procedure, but Gant
+# says we can't do this because of the license:
+#
+# 1. Look for TCP connections where the first TCP data packet is 12 bytes long.
+# 2. Run the outgoing cipher seed (bytes 4:7) through the Type 0x02 KaZaA
+# encryption algorithm (source: http://cvs.berlios.de/cgi-bin/viewcvs.cgi \
+# /gift-fasttrack/giFT-FastTrack/src/crypt/enc_type_2.c).
+# 3. Compare the first 3 bytes of output with the first 3 bytes of the outgoing
+# encryption type (bytes 8:10).
+# 4. If they match, this is FastTrack/KaZaA.
+#
+# There might be less reliable ways to identify the KaZaA TCP connections,
+# i.e., by monitoring the UDP probes.  But iMesh, at least, does not seem to
+# use these probes; it makes a connect to fm1.imesh.com immediately on startup.
+#
+
+#
+# XXX - The giFT-fasttrack docs suggest there are other GET types, i.e.,
+# ".download", ".supernode", ".status", ".network", ".files".  I found these
+# doing a strings(1) on the old Linux kmd binary, as well as ".clients" and
+# ".message".  It's unclear if these are actually used by the latest versions
+# of the protocol (the giFT software doesn't use anything but ".hash").  Just
+# look for ".hash" for now, but also for any HTTP header containing "X-Kazaa".
+#
+fasttrack_transfer =
+    ("GET /.hash=") |
+    ("GET /" any+ 0xd 0xa "X-Kazaa") |
+    ("GIVE ")
+    ;
+
+#
+# XXX - The only "minimum encryption type" values I've seen are 0x29 and 0xa9;
+# but here we'll match on any value.
+#
+fasttrack_udp_ping =
+    0x27					# Message type
+    any{4}					# Minimum encryption type
+    0x80					# Unknown
+    "KaZaA" 0					# Zero terminated network name
+    ;
+
+#
+# XXX - The only "minimum encryption type" values I've seen are 0x29 and 0xa9;
+# but here we'll match on any value.
+#
+fasttrack_udp_pong =
+    0x28					# Message type
+    any{4}					# Minimum encryption type
+    0 any{5}					# Unknown
+    "KaZaA" 0					# Zero terminated network name
+    ;
+
+fasttrack = (fasttrack_udp_ping | fasttrack_udp_pong | fasttrack_transfer)
+    @<MATCH> any*;

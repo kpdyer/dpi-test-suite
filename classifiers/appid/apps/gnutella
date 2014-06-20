@@ -1,0 +1,45 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Gnutella
+AppID: 32
+Port: udp/* tcp/*
+
+#
+# Gnutella is a P2P file sharing protocol/network.  Popular clients include:
+#
+#	BearShare	http://www.bearshare.com
+#	Gnucleus	http://www.gnucleus.com
+#	LimeWire	http://www.limewire.com
+#	Shareaza	http://shareaza.sourceforge.net
+#
+# Protocol docs:
+# http://www9.limewire.com/developer/gnutella_protocol_0.4.pdf
+# http://www.gnutella2.com/
+#
+# XXX - There may be more variants of the file transfer GET command.  The
+# digit{1,10} part here matches a Gnutella "File Index" which is returned in
+# QueryHit messages as a 32-bit integer.  When converted into an ASCII string,
+# this number must be in the range of 1 to 10 characters wide.
+#
+
+gnutella_control = "GNUTELLA CONNECT";
+gnutella_data = ("GET /uri-res/N2R?urn:sha1:" | "GET /get/" digit{1,10} "/");
+
+#
+# XXX - Gnutella sends some messages via UDP instead.  But the UDP format for
+# Gnutella version 1 is probably too freeform for us to match on.  I did notice
+# that the dst port for the TCP connections seems to be the src port that is
+# used for the UDP messages to the same end host.  But using LimeWire, I saw
+# some of those UDP packets *before* the TCP connection started, so it doesn't
+# seem that watching the port values for the TCP connections would be a 100%
+# reliable way to identify all of the Gnutella UDP messages.
+#
+# XXX - Note also that this sig would need to be moved to its own file as
+# part of the 'any' machine, should it ever be enabled.
+#
+#gnutella1_udp = any{16} ( 0x00 | 0x01 | 0x40 | 0x80 | 0x81 ) any{7,};
+
+gnutella2_udp = "GND" 0x00..0x03;
+
+gnutella = ( gnutella_control | gnutella_data | gnutella2_udp ) @<MATCH> any*;

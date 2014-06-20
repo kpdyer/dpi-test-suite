@@ -1,0 +1,61 @@
+#! /usr/bin/env bash
+#
+# Wrapper script around the actual Bro invocation. 
+
+. `dirname $0`/broctl-config.sh
+
+export PATH=${bindir}:${scriptsdir}:$PATH
+
+use_installed_policies=1
+source ${scriptsdir}/set-bro-path
+
+if test `uname` == "FreeBSD" && uname -r | grep -q "^[456]"; then
+   export MALLOC_OPTIONS="HR" # Helps performance on FreeBSD < 7
+fi
+
+child=""
+
+trap sig_handler 0
+
+function sig_handler
+{
+    if [ "$child" != "" ]; then
+        kill -15 $child 2>/dev/null
+        echo KILLED 1>&2
+    fi;
+
+    if [ ! -e .pid ]; then
+       echo -1 >.pid
+    fi
+}
+
+LIMIT=${memlimit:1572864}
+ulimit -m $LIMIT
+ulimit -d $LIMIT
+ulimit -v $LIMIT
+ulimit -c unlimited
+
+echo "PATH=${PATH}" >.env_vars
+echo "BROPATH=${BROPATH}" >>.env_vars
+echo "CLUSTER_NODE=${CLUSTER_NODE}" >>.env_vars
+echo $@ >.cmdline
+
+date +%s >.startup
+date >>.startup
+date +%y-%m-%d_%H.%M.%S >>.startup # Bro default format when rotating files. 
+
+mybro=${bro}
+if [ "${havenfs}" -ne 0 ]; then
+    mybro=${tmpexecdir}/`basename ${bro}`
+    rm -f $mybro
+    cp -p ${bro} $mybro
+fi
+
+sleep 1
+nohup $mybro $@ &
+
+child=$!
+
+echo $child >.pid
+wait $child
+child=""

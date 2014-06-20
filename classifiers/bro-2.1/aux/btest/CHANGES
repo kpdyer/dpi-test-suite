@@ -1,0 +1,239 @@
+
+0.4 | 2012-06-15 15:15:13 -0700
+
+  * Remove code to expand environment variables on command line. (Not
+    needed because the command line is just passed to the shell.)
+    (Daniel Thayer)
+
+  * Clarify explanation about expansion of environment variables.
+    (Daniel Thayer)
+    
+  * Fix errors in README and btest help output; added documentation
+    for the -q option. (Daniel Thayer)
+    
+  * Fixed a bug in btest where it was looking for "filters-" (instead
+    of "filter-") in the btest config file. (Daniel Thayer)
+
+0.31-45 | 2012-05-24 16:43:14 -0700
+
+  * Correct typos in documentation. (Daniel Thayer)
+
+  * Failed tests are now only recorded into the state file when we're
+    not updating. That allows to run "btest -r" repeatedly while
+    updating baselines in between. (Robin Sommer)
+
+  * Experimentation Sphinx directive to write a btest with a Sphinx
+    document. See README for more information.
+
+  * Fixing typos, plus an console output tweak. (Robin Sommer)
+    
+  * Option -q now implies -b as well. (Robin Sommer)
+
+0.31-33 | 2012-05-13 17:08:15 -0700
+
+  * New command to copy a file into a test's directory.
+
+    ``@TEST-COPY-FILE: <file>``
+        Copy the given file into the test's directory before the test is
+        run. If ``<file>`` is a relative path, it's interpreted relative
+        to the BTest's base directory. Environment variables in ``<file>``
+        will be replaced if enclosed in ``${..}``. This command can be
+        given multiple times. (Robin Sommer)
+
+  * Suppressing error messages when btest-diff can't remove diag file.
+    (Robin Sommer)
+
+  * Adding option -q/--quiet to suppress informational non-error
+    output. (Robin Sommer)
+
+  * Option -F also takes a comma-separated list to specify multiple
+    filters , rather than having to give -F multiple times. (Robin
+    Sommer)
+
+0.31-28 | 2012-05-06 21:27:15 -0700
+
+  * Separating semantics of groups and thread serialization into
+    separate options. -g still specifices @TEST-GROUPs that are to be
+    executed, but these groups don't any longer control which tests
+    get serialized in a parallel execution. For that, there's a new
+    "@TEST-SERIALIZE: <tag>" command that takes a tag and then makes
+    sure all tests with the same tag are run within the same thread.
+    (Robin Sommer)
+
+  * TEST-GROUPS can now be given multiple times now to assign a test
+    to a set of groups. (Robin Sommer)
+
+  * Extended -g to accept a comma-separated list of groups names to
+    run more than one test group. (Robin Sommer)
+
+  * New output handler for console output. This output is now the
+    default when stdout is a terminal. It prints out a compressed
+    output that updates as btest goes through; it also indicates the
+    progress so far. If btest's output is redirected to a
+    non-terminal, is switches back to the old style. (Robin Sommer)
+
+  * New test command @TEST-NO-FILTER: <filter>
+    
+    This allows to ignore a test when running a specific filter. (Robin Sommer)
+
+  * Changing the way filters are activated.
+
+    -F <filter> now activates only the given filter, but doesn't run
+    the standard tests in addition. But one can now give -F a
+    command-separated list of filters to activate them all, and refer
+    to the standard tests without filter as ``-``. (Robin Sommer)
+
+  * Fix to allow numbered test to be given individually on the command
+    line. (E.g., integer.geq-3 for a file that contains three tests).
+    (Robin Sommer)
+
+
+0.31-23 | 2012-04-16 18:10:02 -0700
+
+  * A number of smaller fixes for bugs, plus polishing, caused by the
+    recent restructuring. (Robin Sommer)
+
+  * Removing the error given when using -r with tests on the command
+    line. It's unnessary and confusing compared to when listing tests
+    in btest.cfg. (Robin Sommer)
+
+  * Adding a new "finalizer" option.
+    
+    ``Finalizer``
+        An executable that will be executed each time any test has
+        succesfully run. It runs in the same directory as the test itself
+        and receives the name of the test as its parameter. The return
+        value indicates whether the test should indeed be considered
+        succeeded. By default, there's no finalizer set. (Robin Sommer)
+
+  * btest is now again overwriting old diag files instead of appending
+    (i.e., back to as it used to be). (Robin Sommer)
+
+  * Diag output is now line-buffered. (Daniel Thayer)
+
+
+0.31-13 | 2012-03-13 15:59:51 -0700
+
+  * Adding new option -r that reruns all tests that failed last time.
+    btest now always records all failed tests in a file called. (Robin
+    Sommer)
+
+  * Internal restructuring to factor output out into sublcasses.
+    (Robin Sommer)
+
+  * Adding parallel test execution to btest. (Robin Sommer)
+    
+        - A new option "-j <n>" allows to run up to <n> tests in
+          parallel.
+
+        - A new @TEST-GROUP directive allows to group tests that can't
+          be parallelized. All tests of the same group will be
+          executed sequentially.
+
+        - A new option "-g <group>" allows to run only tests of a
+          certain group, or with "-g -" all tests that don't have a
+          group.
+
+
+0.31-2 | 2012-01-25 16:58:29 -0800
+
+  * Don't add btest's path to PATH anymore. (Jon Siwek)
+
+0.31 | 2011-11-29 12:11:49 -0600
+
+  * Submodule README conformity changes. (Jon Siwek)
+
+0.3 | 2011-10-25 19:58:26 -0700
+
+  * More graceful error handling at startup if btest.cfg not found.
+    (Robin Sommer)
+
+  * Python 2.4 compat changes. (Jon Siwek)
+
+  * When in brief mode, btest-diff now shows full output if we don't
+    have a baseline yet. (Robin Sommer)
+
+  * Adding executable permission back to script. (Robin Sommer)
+
+  * Cleaning up distribution. (Robin Sommer)
+
+0.22-28 | 2011-09-15 15:18:11 -0700
+
+  * New environment variable TEST_DIFF_BRIEF. If set btest-diff no
+    longer includes a mismatching file's full content it the
+    diagnostic output. This can be useful if the file being compared
+    is very large. (Robin Sommer)
+
+0.22-27 | 2011-08-12 22:56:12 -0700
+
+  * Fix btest-bg-wait's kill trap and -k option. (Jon Siwek)
+
+0.22-18 | 2011-07-23 11:54:07 -0700
+
+  * A new option -u for interactively updating baselines.
+
+  * Teach btest's TEST-START-FILE to make subdirectories (Jon Siwek)
+
+  * Output polishing. (Robin Sommer)
+
+  * Have distutils install 'btest-setsid' script. (Jon Siwek)
+
+  * A portable setsid. (Robin Sommer)
+
+  * Fixes for background execution of processes.
+
+  * Fixing exit codes. (Robin Sommer)
+
+0.22-6 | 2011-07-19 17:38:03 -0700
+
+  * Teach btest's TEST-START-FILE to make subdirectories (Jon Siwek)
+
+0.22-5 | 2011-05-02 08:41:34 -0700
+
+  * A number of bug fixes, and output polishing. (Robin Sommer)
+
+  * More robust background execution by btest-bg-*. (Robin Sommer)
+
+0.22-4 | 2011-03-29 21:38:13 -0700
+
+  * A test command can now signal to btest that even if it fails
+    subsequent test commands should still run by returning exit code 100.
+    btest-diff uses this to continue in the case that no baseline has
+    yet been established.
+
+  * New test option @TEST-REQUIRES for running a test conditionally.
+    See the README for more information.
+
+0.22-2 | 2011-03-03 21:44:18 -0800
+
+  * Two new helper scripts for spawning processes in the background.
+    See README for more information.
+
+  * btest-diff can now deal with files specificied with paths.
+
+0.22 | 2011-02-08 14:06:13 -0800
+
+  * BTest is now hosted along with the other Bro repositories on
+    git.bro-ids.org.
+
+0.21 | 2011-01-09 21:29:18 -0800
+
+  * In btest.cfg, option values can now include commands to execute in
+    backticks.
+
+    Example:
+
+        [environment]
+        CC=clang -emit-llvm -g `hilti-config --cflags`
+
+  * Limiting substitutions to replacing whole words.
+
+  * Adding "substitutions". Substitutions are similar to filters, yet
+    they do not adapt the input but the command line being exectued.
+    See README for more information.
+
+  * Instead of giving a test's file name on the command line, one can
+    now also use its "dotted" name as it's printed out when btest is
+    running (e.g., "foo.bar"). That allows for easier copy/paste.
+
+  * Starting CHANGES.

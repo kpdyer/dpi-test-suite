@@ -1,0 +1,25 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Git
+AppID: 31
+Port: tcp/9418
+Machine: any4
+
+##########
+# Git
+
+# Git Version Control System
+# http://git.or.cz/
+
+git_commands = 
+    ( "upload-pack" |
+      "receive-pack" );
+
+git_header = 
+    any{4}			# length
+    "git-"			# start of command
+    git_commands		# rest of comand			
+    ;
+
+git = git_header @<MATCH> any*;

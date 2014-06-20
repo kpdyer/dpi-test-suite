@@ -1,0 +1,20 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: TFTP
+AppID: 111
+Port: udp/69
+
+# TFTP
+# http://www.ietf.org/rfc/rfc1350.txt
+
+# XXX - Match read (RRQ, opcode=1) and write (WRQ, opcode=2) requests only.  A
+# TFTP request flow from "hostA:portY" to "hostB:69" will generate a response
+# flow from "hostB:portZ" to "hostA:portY", where portZ is unknown.  What
+# happens is that we only look for the RRQ and WRQ opcode here, and then
+# pktengine will add an anticipated flow to its hash for the response flow.  We
+# will then be able to properly identify TFTP packets with other opcodes (i.e.,
+# 3=DATA, 4=ACK, 5=ERROR), which are otherwise too freeform to match on.
+
+tftp =
+    0 ( 1 | 2 ) (any - 0)+ 0 ( "netascii"i | "octet"i | "mail"i ) 0 @<MATCH> any*;

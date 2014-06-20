@@ -1,0 +1,63 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: RDP
+AppID: 82
+Port: tcp/3389
+
+# RDP is an extension of the T.Share protocol.  RDP is layered ontop
+# the Multipoint Communications Service (MCS) (T.122 and T.125), which
+# is layered ontop ISO Transport over TCP.
+#
+# See:
+#   rdesktop homepage and source code (iso.c)
+#     http://www.rdesktop.org/
+#   Understanding the Remote Desktop Protocol (RDP)
+#     http://support.microsoft.com/default.aspx?scid=kb;EN-US;q186607
+
+
+# Header
+# ISO Transport Service on top of TCP (RFC 2126), Section 4.3
+itot_header =
+    0x03			# Protocol version number
+    0x00			# Reserved
+    any any			# Packet length
+    ;
+
+# RDP Connection Request (client -> server)
+rdp_cr = 
+    any				# header length
+    0xe0			# connection request
+    any any			# dst ref
+    any any			# src ref
+    any				# class
+    "Cookie: mstshash="i	# auth cookie
+    ;
+
+# RDP Confirm (server -> client)
+rdp_cc = 
+    any				# header length
+    0xd0			# connection confirm
+    any any			# dst ref
+    any any			# src ref
+    any				# class
+    ;
+
+# RDP Data transfer
+rdp_dt = 
+    any				# header length
+    0xf0			# data transfer
+    0x80			# eot
+    ;
+
+# Look for:
+#   1. RDP connection request
+#   2. RDP connection confirmation
+#   3. RDP data transfer
+rdp =
+    itot_header 
+    (rdp_cr |			# connection request
+     rdp_cc |			# connection confirm
+     rdp_dt)			# data transfer
+    @<MATCH> any*
+  ;

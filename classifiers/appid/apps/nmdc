@@ -1,0 +1,24 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: NMDC
+AppID: 62
+Port: tcp/411 udp/411
+
+##########
+# NMDC
+
+# NeoModus Direct Connect protocol
+#
+# Info: http://en.wikipedia.org/wiki/Direct_Connect_%28file_sharing%29
+#
+# Proto: http://umn.dl.sourceforge.net/sourceforge/opendcd/directconnect.txt
+
+nmdc_commands = 
+    ( "$Lock "i |
+      "$Key "i |
+      "$ValidateNick "i |
+      "$HubName "i |
+      "$ConnectToMe "i );
+
+nmdc = nmdc_commands @<MATCH> any*;

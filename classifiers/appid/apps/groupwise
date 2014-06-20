@@ -1,0 +1,40 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Groupwise
+AppID: 33
+Port: tcp/8300
+
+##########
+# Groupwise
+
+# Novell Groupwise
+#
+# http://www.novell.com/products/groupwise/
+#
+# This signature was developed from looking at the gaim plugin for
+# Groupwise written by Novell since no protocol documentation exists.
+# 
+# This signature is a moving target, so may need to be updated
+# more often than others.
+# 
+
+groupwise_header = 
+    "POST /login" [^ ]* " HTTP/1." digit "\r\n"		# HTTP/1.x POST
+# consume non-empty header lines:
+    (((any - [\r])+ "\r\n")*) :>> 			# additional HTTP headers
+# consume an empty line:
+    ( "\r\n")					        # end of HTTP header
+    ;
+
+groupwise_login = 
+    groupwise_header
+# USERID variable appears to be deprecated:
+#      (("&"? "tag=NM_A_SZ_USERID"i  ) |			# POST data
+#
+# Expect that Groupwise is the only app using tag=NM_A_.* variable
+# names.
+      ("&"? "tag=NM_A_"i  )      			# POST data
+    ;
+
+groupwise = groupwise_login @<MATCH> any*;

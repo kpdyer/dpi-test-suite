@@ -1,0 +1,23 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: SSL
+AppID: 103
+Port: tcp/443 tcp/993 tcp/995
+#     https   imaps   pop3s
+Machine: any
+
+# SSL 2.0
+# http://wp.netscape.com/eng/security/SSL_2.html
+ssl_20 = 
+    any any		    # Length
+    (1 | 4)		    # Message type: Client or Server Hello
+    ((2 0) | (3 0) | (3 1));# Version: SSL 2.0 or 3.0, TLS 1.0
+
+# SSL 3.0 and TLS 1.0 (a.k.a. SSL 3.1)
+# http://www.ietf.org/rfc/rfc2246.txt
+tls_10 =
+    22		    	    # Content type: Handshake (22)
+    3 (0 | 1);	    	    # Version: {3, 1} (TLS 1.0)
+
+ssl = (ssl_20 | tls_10) @<MATCH> any*;

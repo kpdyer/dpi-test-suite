@@ -1,0 +1,24 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: HTTP
+AppID: 35
+Port: tcp/80 tcp/8080
+
+# RFC 1945: HTTP 0.9 and 1.0
+# RFC 2616: HTTP 1.1
+
+# RFCs 1945 and 2616, Section 6.1
+http_response_status_line =
+    "HTTP/" digit+ "." digit+ " "	# Version
+    digit{3}				# Status code 
+    [^\r\n]+? [\r\n]+			# Reason phrase
+    ;
+
+# Identify HTTP using the server response instead of the client
+# request.  This allows us to more easily write fingerprints for
+# protocols layered above HTTP (e.g. DAAP, ICY).
+http = 
+    http_response_status_line
+    @<MATCH> any*
+    ;

@@ -1,0 +1,17 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: Kerberos
+AppID: 123
+Port: tcp/88 tcp/4444 udp/88 udp/4444
+
+# Required by kerberos_tcp, kerberos_udp
+#
+# This file defines a placeholder for the Kerberos name and
+# application ID number.
+#
+# We don't put the common ragel code in here, because if
+# we did, the current appid.rl generation script would
+# expect to match the given AppID, which the common
+# kerberos code doesn't do.
+#

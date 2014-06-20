@@ -1,0 +1,25 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: PostgreSQL
+AppID: 76
+Port: tcp/5432
+
+##########
+# PostgreSQL
+
+# Protocol Version 3.0
+# >= PostgreSQL 7.4
+# http://www.postgresql.org/docs/8.1/static/protocol-message-formats.html
+
+# The psql client sends a SSLRequest message at connection setup to
+# attempt to negotiate SSL capabilities.  The SSLRequest contains
+# a static message length and magic number.
+
+postgresql_ssl_connection =
+    0x00 0x00 0x00 0x08			# message length
+    0x04 0xd2				# magic number (1234)
+    0x16 0x2f				# magic number (5679)
+    ;
+
+postgresql = postgresql_ssl_connection @<MATCH> any*;

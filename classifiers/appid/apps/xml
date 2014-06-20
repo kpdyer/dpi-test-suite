@@ -1,0 +1,23 @@
+# Copyright (c) 2006 Arbor Networks, Inc.
+# All rights reserved.  Proprietary and confidential.
+
+Name: XML
+Port: tcp/60005
+
+##########
+# XML
+
+# Regular expressions for XML text declaration are from:
+# http://www.w3.org/TR/REC-xml/#NT-TextDecl
+#
+# This signature is simply a dependency for other XML-based protocols
+
+xml_ws = (' ' | '\r' | '\n' | '\t')+;
+xml_eq = xml_ws? '=' xml_ws?;
+xml_num = [0-9] '.' [0-9];
+xml_enc = [A-Za-z] ([A-Za-z0-9._] | '-')*;
+xml_enc_decl = xml_ws 'encoding' xml_eq ('"' xml_enc '"' | "'" xml_enc "'" );
+xml_version = xml_ws 'version' xml_eq ("'" xml_num "'" | '"' xml_num '"');
+xml_text_decl = '<?xml' xml_version xml_enc_decl? xml_ws? '?>';
+
+xml = "";
